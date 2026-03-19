@@ -27,6 +27,9 @@ public class SuperglassPlannerPanel extends PluginPanel
 	private final JLabel astralRuneLabel = new JLabel();
 	private final JLabel possibleCastsLabel = new JLabel();
 	private final JLabel estimatedGlassLabel = new JLabel();
+	private final JLabel bankSeaweedNeededLabel = new JLabel();
+	private final JLabel bankSandNeededLabel = new JLabel();
+	private final JLabel bankAstralsNeededLabel = new JLabel();
 
 	// Goal section labels
 	private final JLabel xpRemainingLabel = new JLabel();
@@ -93,6 +96,10 @@ public class SuperglassPlannerPanel extends PluginPanel
 		section.add(Box.createVerticalStrut(5));
 		section.add(createRow("Possible Casts:", possibleCastsLabel));
 		section.add(createRow("Est. Glass Output:", estimatedGlassLabel));
+		section.add(Box.createVerticalStrut(5));
+		section.add(createRow("Seaweed Needed:", bankSeaweedNeededLabel));
+		section.add(createRow("Sand Needed:", bankSandNeededLabel));
+		section.add(createRow("Astrals Needed:", bankAstralsNeededLabel));
 
 		return section;
 	}
@@ -191,6 +198,16 @@ public class SuperglassPlannerPanel extends PluginPanel
 
 			possibleCastsLabel.setText(FORMAT.format(bankScanner.possibleCasts()));
 			estimatedGlassLabel.setText(FORMAT.format(bankScanner.estimatedGlass(config.pickupExtraGlass())));
+
+			int seaweedDef = bankScanner.seaweedDeficit();
+			int sandDef = bankScanner.sandDeficit();
+			int astralDef = bankScanner.astralDeficit();
+			bankSeaweedNeededLabel.setText(seaweedDef > 0 ? "+" + FORMAT.format(seaweedDef) : "Balanced");
+			bankSandNeededLabel.setText(sandDef > 0 ? "+" + FORMAT.format(sandDef) : "Balanced");
+			bankAstralsNeededLabel.setText(astralDef > 0 ? "+" + FORMAT.format(astralDef) : "Balanced");
+			bankSeaweedNeededLabel.setForeground(seaweedDef > 0 ? ColorScheme.PROGRESS_ERROR_COLOR : ColorScheme.PROGRESS_COMPLETE_COLOR);
+			bankSandNeededLabel.setForeground(sandDef > 0 ? ColorScheme.PROGRESS_ERROR_COLOR : ColorScheme.PROGRESS_COMPLETE_COLOR);
+			bankAstralsNeededLabel.setForeground(astralDef > 0 ? ColorScheme.PROGRESS_ERROR_COLOR : ColorScheme.PROGRESS_COMPLETE_COLOR);
 		}
 		else
 		{
@@ -200,6 +217,9 @@ public class SuperglassPlannerPanel extends PluginPanel
 			astralRuneLabel.setText("-");
 			possibleCastsLabel.setText("-");
 			estimatedGlassLabel.setText("-");
+			bankSeaweedNeededLabel.setText("-");
+			bankSandNeededLabel.setText("-");
+			bankAstralsNeededLabel.setText("-");
 		}
 
 		// Goal

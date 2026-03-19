@@ -158,6 +158,58 @@ public class BankScanner
 		return (int) (possibleCasts() * glassPerCast);
 	}
 
+	/**
+	 * Calculates the max casts if you had unlimited of this resource,
+	 * i.e. the max casts based on the OTHER two resources.
+	 */
+	public int maxCastsIgnoringSeaweed()
+	{
+		int castsBySand = bucketOfSandCount / SAND_PER_CAST;
+		int castsByAstrals = totalAstralRunes() / ASTRAL_RUNES_PER_CAST;
+		return Math.min(castsBySand, castsByAstrals);
+	}
+
+	public int maxCastsIgnoringSand()
+	{
+		int castsBySeaweed = giantSeaweedCount / GIANT_SEAWEED_PER_CAST;
+		int castsByAstrals = totalAstralRunes() / ASTRAL_RUNES_PER_CAST;
+		return Math.min(castsBySeaweed, castsByAstrals);
+	}
+
+	public int maxCastsIgnoringAstrals()
+	{
+		int castsBySeaweed = giantSeaweedCount / GIANT_SEAWEED_PER_CAST;
+		int castsBySand = bucketOfSandCount / SAND_PER_CAST;
+		return Math.min(castsBySeaweed, castsBySand);
+	}
+
+	/**
+	 * How much more seaweed you need to fully use your sand + astrals.
+	 */
+	public int seaweedDeficit()
+	{
+		int needed = maxCastsIgnoringSeaweed() * GIANT_SEAWEED_PER_CAST;
+		return Math.max(0, needed - giantSeaweedCount);
+	}
+
+	/**
+	 * How much more sand you need to fully use your seaweed + astrals.
+	 */
+	public int sandDeficit()
+	{
+		int needed = maxCastsIgnoringSand() * SAND_PER_CAST;
+		return Math.max(0, needed - bucketOfSandCount);
+	}
+
+	/**
+	 * How many more astrals you need to fully use your seaweed + sand.
+	 */
+	public int astralDeficit()
+	{
+		int needed = maxCastsIgnoringAstrals() * ASTRAL_RUNES_PER_CAST;
+		return Math.max(0, needed - totalAstralRunes());
+	}
+
 	public void reset()
 	{
 		giantSeaweedCount = 0;
