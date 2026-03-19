@@ -27,6 +27,8 @@ public class BankScanner
 	// Rune pouch type ID for astral rune (from RuneLite's runepouch enum)
 	private static final int RUNE_POUCH_ASTRAL_TYPE = 14;
 
+	private static final int LOOTING_BAG_CONTAINER_ID = 516;
+
 	@Inject
 	private Client client;
 
@@ -49,6 +51,9 @@ public class BankScanner
 	private int runePouchAstralCount;
 
 	@Getter
+	private int lootingBagGlassCount;
+
+	@Getter
 	private boolean bankLoaded;
 
 	@Subscribe
@@ -60,6 +65,10 @@ public class BankScanner
 		{
 			updateBankCounts(event.getItemContainer());
 			updateRunePouchCounts();
+		}
+		else if (containerId == LOOTING_BAG_CONTAINER_ID)
+		{
+			updateLootingBagCounts(event.getItemContainer());
 		}
 	}
 
@@ -106,6 +115,31 @@ public class BankScanner
 		bankLoaded = true;
 		log.debug("Bank scanned - Seaweed: {}, Sand: {}, Soda Ash: {}, Glass: {}, Astrals: {}",
 			giantSeaweedCount, bucketOfSandCount, sodaAshCount, moltenGlassCount, astralRuneCount);
+	}
+
+	private void updateLootingBagCounts(ItemContainer bag)
+	{
+		lootingBagGlassCount = 0;
+		if (bag == null)
+		{
+			return;
+		}
+		for (Item item : bag.getItems())
+		{
+			if (item != null && item.getId() == MOLTEN_GLASS)
+			{
+				lootingBagGlassCount += item.getQuantity();
+			}
+		}
+		log.debug("Looting bag glass: {}", lootingBagGlassCount);
+	}
+
+	/**
+	 * Total molten glass across bank + looting bag.
+	 */
+	public int totalMoltenGlass()
+	{
+		return moltenGlassCount + lootingBagGlassCount;
 	}
 
 	/**
@@ -218,6 +252,7 @@ public class BankScanner
 		moltenGlassCount = 0;
 		astralRuneCount = 0;
 		runePouchAstralCount = 0;
+		lootingBagGlassCount = 0;
 		bankLoaded = false;
 	}
 }

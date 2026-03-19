@@ -106,9 +106,9 @@ public class SuperglassPlannerPlugin extends Plugin
 	@Subscribe
 	public void onGameTick(GameTick event)
 	{
-		// Update panel every 5 ticks (~3 seconds) to avoid excessive UI updates
+		// Update panel every 2 ticks (~1.2 seconds) for responsive UI
 		tickCounter++;
-		if (tickCounter % 5 == 0)
+		if (tickCounter % 2 == 0)
 		{
 			panel.update();
 		}

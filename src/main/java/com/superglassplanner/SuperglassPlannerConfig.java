@@ -95,6 +95,18 @@ public interface SuperglassPlannerConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "factorExistingGlass",
+		name = "Factor Existing Glass",
+		description = "Subtract molten glass already in bank/looting bag from glass needed calculations",
+		section = goalsSection,
+		position = 6
+	)
+	default boolean factorExistingGlass()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "bertReminder",
 		name = "Bert Daily Sand Reminder",
 		description = "Remind you to collect 84 daily sand from Bert (Hand in the Sand quest)",

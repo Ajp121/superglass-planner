@@ -39,9 +39,12 @@ public class SessionTracker
 	@Getter
 	private int glassProduced;
 
+	private static final int LOOTING_BAG_CONTAINER_ID = 516;
+
 	private int lastCraftingXp = -1;
 	private int lastMagicXp = -1;
 	private int lastInventoryGlassCount = -1;
+	private int lastLootingBagGlassCount = -1;
 
 	@Subscribe
 	public void onAnimationChanged(AnimationChanged event)
@@ -61,25 +64,36 @@ public class SessionTracker
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event)
 	{
-		if (event.getContainerId() != InventoryID.INVENTORY.getId())
-		{
-			return;
-		}
+		int containerId = event.getContainerId();
 
-		ItemContainer inventory = event.getItemContainer();
-		int currentGlass = countItem(inventory, MOLTEN_GLASS);
-
-		if (lastInventoryGlassCount >= 0)
+		if (containerId == InventoryID.INVENTORY.getId())
 		{
-			int delta = currentGlass - lastInventoryGlassCount;
-			if (delta > 0)
+			int currentGlass = countItem(event.getItemContainer(), MOLTEN_GLASS);
+			if (lastInventoryGlassCount >= 0)
 			{
-				glassProduced += delta;
-				log.debug("Glass picked up: +{}, total produced: {}", delta, glassProduced);
+				int delta = currentGlass - lastInventoryGlassCount;
+				if (delta > 0)
+				{
+					glassProduced += delta;
+					log.debug("Glass to inventory: +{}, total produced: {}", delta, glassProduced);
+				}
 			}
+			lastInventoryGlassCount = currentGlass;
 		}
-
-		lastInventoryGlassCount = currentGlass;
+		else if (containerId == LOOTING_BAG_CONTAINER_ID)
+		{
+			int currentGlass = countItem(event.getItemContainer(), MOLTEN_GLASS);
+			if (lastLootingBagGlassCount >= 0)
+			{
+				int delta = currentGlass - lastLootingBagGlassCount;
+				if (delta > 0)
+				{
+					glassProduced += delta;
+					log.debug("Glass to looting bag: +{}, total produced: {}", delta, glassProduced);
+				}
+			}
+			lastLootingBagGlassCount = currentGlass;
+		}
 	}
 
 	private int countItem(ItemContainer container, int itemId)
@@ -139,5 +153,6 @@ public class SessionTracker
 		lastCraftingXp = -1;
 		lastMagicXp = -1;
 		lastInventoryGlassCount = -1;
+		lastLootingBagGlassCount = -1;
 	}
 }

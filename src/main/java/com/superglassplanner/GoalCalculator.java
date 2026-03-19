@@ -24,6 +24,17 @@ public class GoalCalculator
 	private BankScanner bankScanner;
 
 	/**
+	 * Effective crafting XP per glass, including both Superglass Make cast XP
+	 * and the XP from blowing the glass item.
+	 */
+	public double effectiveXpPerGlass()
+	{
+		double glassPerCast = config.pickupExtraGlass() ? AVG_TOTAL_GLASS_PER_CAST : AVG_GLASS_NO_PICKUP;
+		double makeXpPerGlass = CRAFTING_XP_PER_CAST / glassPerCast;
+		return config.glassItem().getXpPerGlass() + makeXpPerGlass;
+	}
+
+	/**
 	 * XP remaining to reach goal.
 	 */
 	public int xpRemaining()
@@ -40,8 +51,7 @@ public class GoalCalculator
 				targetXp = config.targetXp();
 				break;
 			case TARGET_GLASS:
-				// XP from blowing the target amount of glass
-				targetXp = currentXp + (int) (config.targetGlass() * config.glassItem().getXpPerGlass());
+				targetXp = currentXp + (int) (config.targetGlass() * effectiveXpPerGlass());
 				break;
 			default:
 				targetXp = xpForLevel(99);
@@ -57,9 +67,25 @@ public class GoalCalculator
 	{
 		if (config.goalType() == GoalType.TARGET_GLASS)
 		{
-			return config.targetGlass();
+			int needed = config.targetGlass();
+			if (config.factorExistingGlass())
+			{
+				needed = Math.max(0, needed - bankScanner.totalMoltenGlass());
+			}
+			return needed;
 		}
-		return (int) Math.ceil(xpRemaining() / config.glassItem().getXpPerGlass());
+
+		int remaining = xpRemaining();
+
+		if (config.factorExistingGlass())
+		{
+			// Existing glass only gives blow XP (already made, no Superglass Make XP)
+			int existingGlass = bankScanner.totalMoltenGlass();
+			double xpFromExisting = existingGlass * config.glassItem().getXpPerGlass();
+			remaining = Math.max(0, (int) (remaining - xpFromExisting));
+		}
+
+		return (int) Math.ceil(remaining / effectiveXpPerGlass());
 	}
 
 	/**
