@@ -3,8 +3,12 @@ package com.superglassplanner;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.InventoryID;
+import net.runelite.api.Item;
+import net.runelite.api.ItemContainer;
 import net.runelite.api.Skill;
 import net.runelite.api.events.AnimationChanged;
+import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.StatChanged;
 import net.runelite.client.eventbus.Subscribe;
 
@@ -37,6 +41,7 @@ public class SessionTracker
 
 	private int lastCraftingXp = -1;
 	private int lastMagicXp = -1;
+	private int lastInventoryGlassCount = -1;
 
 	@Subscribe
 	public void onAnimationChanged(AnimationChanged event)
@@ -51,6 +56,47 @@ public class SessionTracker
 			castCount++;
 			log.debug("Superglass Make cast detected! Total casts: {}", castCount);
 		}
+	}
+
+	@Subscribe
+	public void onItemContainerChanged(ItemContainerChanged event)
+	{
+		if (event.getContainerId() != InventoryID.INVENTORY.getId())
+		{
+			return;
+		}
+
+		ItemContainer inventory = event.getItemContainer();
+		int currentGlass = countItem(inventory, MOLTEN_GLASS);
+
+		if (lastInventoryGlassCount >= 0)
+		{
+			int delta = currentGlass - lastInventoryGlassCount;
+			if (delta > 0)
+			{
+				glassProduced += delta;
+				log.debug("Glass picked up: +{}, total produced: {}", delta, glassProduced);
+			}
+		}
+
+		lastInventoryGlassCount = currentGlass;
+	}
+
+	private int countItem(ItemContainer container, int itemId)
+	{
+		int count = 0;
+		if (container == null)
+		{
+			return count;
+		}
+		for (Item item : container.getItems())
+		{
+			if (item != null && item.getId() == itemId)
+			{
+				count += item.getQuantity();
+			}
+		}
+		return count;
 	}
 
 	@Subscribe
@@ -84,15 +130,6 @@ public class SessionTracker
 		}
 	}
 
-	/**
-	 * Estimates glass produced based on cast count.
-	 */
-	public int estimatedGlassProduced(boolean pickupExtra)
-	{
-		double glassPerCast = pickupExtra ? AVG_TOTAL_GLASS_PER_CAST : AVG_GLASS_NO_PICKUP;
-		return (int) (castCount * glassPerCast);
-	}
-
 	public void reset()
 	{
 		castCount = 0;
@@ -101,5 +138,6 @@ public class SessionTracker
 		glassProduced = 0;
 		lastCraftingXp = -1;
 		lastMagicXp = -1;
+		lastInventoryGlassCount = -1;
 	}
 }

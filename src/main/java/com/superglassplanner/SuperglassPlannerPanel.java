@@ -219,7 +219,7 @@ public class SuperglassPlannerPanel extends PluginPanel
 
 		// Session
 		sessionCastsLabel.setText(FORMAT.format(sessionTracker.getCastCount()));
-		sessionGlassLabel.setText(FORMAT.format(sessionTracker.estimatedGlassProduced(config.pickupExtraGlass())));
+		sessionGlassLabel.setText(FORMAT.format(sessionTracker.getGlassProduced()));
 		sessionCraftXpLabel.setText(FORMAT.format(sessionTracker.getCraftingXpGained()));
 		sessionMagicXpLabel.setText(FORMAT.format(sessionTracker.getMagicXpGained()));
 	}

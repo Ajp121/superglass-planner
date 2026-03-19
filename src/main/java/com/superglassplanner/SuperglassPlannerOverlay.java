@@ -69,7 +69,7 @@ public class SuperglassPlannerOverlay extends OverlayPanel
 
 			panelComponent.getChildren().add(LineComponent.builder()
 				.left("Glass Made:")
-				.right(FORMAT.format(sessionTracker.estimatedGlassProduced(config.pickupExtraGlass())))
+				.right(FORMAT.format(sessionTracker.getGlassProduced()))
 				.build());
 		}
 
