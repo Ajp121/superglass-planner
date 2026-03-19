@@ -180,7 +180,15 @@ public class SuperglassPlannerPanel extends PluginPanel
 			giantSeaweedLabel.setText(FORMAT.format(bankScanner.getGiantSeaweedCount()));
 			bucketOfSandLabel.setText(FORMAT.format(bankScanner.getBucketOfSandCount()));
 			moltenGlassLabel.setText(FORMAT.format(bankScanner.getMoltenGlassCount()));
-			astralRuneLabel.setText(FORMAT.format(bankScanner.getAstralRuneCount()));
+
+			int totalAstrals = bankScanner.totalAstralRunes();
+			String astralText = FORMAT.format(totalAstrals);
+			if (bankScanner.getRunePouchAstralCount() > 0)
+			{
+				astralText += " (" + FORMAT.format(bankScanner.getRunePouchAstralCount()) + " in pouch)";
+			}
+			astralRuneLabel.setText(astralText);
+
 			possibleCastsLabel.setText(FORMAT.format(bankScanner.possibleCasts()));
 			estimatedGlassLabel.setText(FORMAT.format(bankScanner.estimatedGlass(config.pickupExtraGlass())));
 		}

@@ -15,12 +15,18 @@ import javax.inject.Singleton;
 import static com.superglassplanner.SuperglassConstants.*;
 
 /**
- * Scans the player's bank for Superglass Make materials.
+ * Scans the player's bank and rune pouch for Superglass Make materials.
  */
 @Slf4j
 @Singleton
 public class BankScanner
 {
+	// Rune pouch varbits (supports up to 6 slots with divine rune pouch)
+	private static final int[] RUNE_POUCH_TYPE_VARBITS = {29, 1622, 1623, 4726, 4727, 4728};
+	private static final int[] RUNE_POUCH_AMOUNT_VARBITS = {1624, 1625, 1626, 4729, 4730, 4731};
+	// Rune pouch type ID for astral rune (from RuneLite's runepouch enum)
+	private static final int RUNE_POUCH_ASTRAL_TYPE = 14;
+
 	@Inject
 	private Client client;
 
@@ -40,6 +46,9 @@ public class BankScanner
 	private int astralRuneCount;
 
 	@Getter
+	private int runePouchAstralCount;
+
+	@Getter
 	private boolean bankLoaded;
 
 	@Subscribe
@@ -50,6 +59,7 @@ public class BankScanner
 		if (containerId == InventoryID.BANK.getId())
 		{
 			updateBankCounts(event.getItemContainer());
+			updateRunePouchCounts();
 		}
 	}
 
@@ -99,13 +109,44 @@ public class BankScanner
 	}
 
 	/**
-	 * Returns how many Superglass Make casts are possible with current bank materials.
+	 * Reads astral rune count from the rune pouch via varbits.
+	 */
+	private void updateRunePouchCounts()
+	{
+		runePouchAstralCount = 0;
+
+		for (int i = 0; i < RUNE_POUCH_TYPE_VARBITS.length; i++)
+		{
+			int runeType = client.getVarbitValue(RUNE_POUCH_TYPE_VARBITS[i]);
+			int amount = client.getVarbitValue(RUNE_POUCH_AMOUNT_VARBITS[i]);
+
+			if (runeType == RUNE_POUCH_ASTRAL_TYPE && amount > 0)
+			{
+				runePouchAstralCount += amount;
+			}
+		}
+
+		log.debug("Rune pouch astrals: {}", runePouchAstralCount);
+	}
+
+	/**
+	 * Total astral runes across bank + rune pouch.
+	 */
+	public int totalAstralRunes()
+	{
+		return astralRuneCount + runePouchAstralCount;
+	}
+
+	/**
+	 * Returns how many Superglass Make casts are possible with current materials.
+	 * Factors in giant seaweed, sand, AND astral runes (2 per cast).
 	 */
 	public int possibleCasts()
 	{
 		int castsBySeaweed = giantSeaweedCount / GIANT_SEAWEED_PER_CAST;
 		int castsBySand = bucketOfSandCount / SAND_PER_CAST;
-		return Math.min(castsBySeaweed, castsBySand);
+		int castsByAstrals = totalAstralRunes() / ASTRAL_RUNES_PER_CAST;
+		return Math.min(castsBySeaweed, Math.min(castsBySand, castsByAstrals));
 	}
 
 	/**
@@ -124,6 +165,7 @@ public class BankScanner
 		sodaAshCount = 0;
 		moltenGlassCount = 0;
 		astralRuneCount = 0;
+		runePouchAstralCount = 0;
 		bankLoaded = false;
 	}
 }

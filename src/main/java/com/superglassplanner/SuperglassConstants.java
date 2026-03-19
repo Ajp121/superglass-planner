@@ -22,6 +22,7 @@ public final class SuperglassConstants
 	// Bonus yield: ~10.8 extra on average, for ~28.8 total per cast (pickup method)
 	public static final int SAND_PER_CAST = 18;
 	public static final int GIANT_SEAWEED_PER_CAST = 3;
+	public static final int ASTRAL_RUNES_PER_CAST = 2;
 	public static final double BASE_GLASS_PER_CAST = 18.0;
 	public static final double AVG_BONUS_GLASS_PER_CAST = 10.8;
 	public static final double AVG_TOTAL_GLASS_PER_CAST = BASE_GLASS_PER_CAST + AVG_BONUS_GLASS_PER_CAST;
