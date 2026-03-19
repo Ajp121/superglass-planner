@@ -23,11 +23,23 @@ public interface SuperglassPlannerConfig extends Config
 	String remindersSection = "reminders";
 
 	@ConfigItem(
-		keyName = "targetLevel",
-		name = "Target Crafting Level",
-		description = "The Crafting level you are working towards",
+		keyName = "goalType",
+		name = "Goal Type",
+		description = "What kind of goal to track",
 		section = goalsSection,
 		position = 0
+	)
+	default GoalType goalType()
+	{
+		return GoalType.TARGET_LEVEL;
+	}
+
+	@ConfigItem(
+		keyName = "targetLevel",
+		name = "Target Crafting Level",
+		description = "The Crafting level you are working towards (used when Goal Type is Target Level)",
+		section = goalsSection,
+		position = 1
 	)
 	default int targetLevel()
 	{
@@ -35,11 +47,47 @@ public interface SuperglassPlannerConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "targetXp",
+		name = "Target XP",
+		description = "The total Crafting XP you are working towards (used when Goal Type is Target XP)",
+		section = goalsSection,
+		position = 2
+	)
+	default int targetXp()
+	{
+		return 13034431;
+	}
+
+	@ConfigItem(
+		keyName = "targetGlass",
+		name = "Target Glass Amount",
+		description = "How many molten glass you want to produce (used when Goal Type is Target Glass)",
+		section = goalsSection,
+		position = 3
+	)
+	default int targetGlass()
+	{
+		return 10000;
+	}
+
+	@ConfigItem(
+		keyName = "glassItem",
+		name = "Glass Item to Blow",
+		description = "Which item you plan to blow from the molten glass (affects XP calculations)",
+		section = goalsSection,
+		position = 4
+	)
+	default GlassItem glassItem()
+	{
+		return GlassItem.UNPOWERED_ORB;
+	}
+
+	@ConfigItem(
 		keyName = "pickupExtraGlass",
 		name = "Pickup Extra Glass",
 		description = "Whether you pick up bonus molten glass from the floor after casting",
 		section = goalsSection,
-		position = 1
+		position = 5
 	)
 	default boolean pickupExtraGlass()
 	{

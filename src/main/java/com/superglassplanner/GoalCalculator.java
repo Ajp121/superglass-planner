@@ -9,7 +9,7 @@ import javax.inject.Singleton;
 import static com.superglassplanner.SuperglassConstants.*;
 
 /**
- * Calculates materials needed to reach a target Crafting level via Superglass Make.
+ * Calculates materials needed to reach a crafting goal via Superglass Make.
  */
 @Singleton
 public class GoalCalculator
@@ -24,21 +24,42 @@ public class GoalCalculator
 	private BankScanner bankScanner;
 
 	/**
-	 * XP remaining to reach target level.
+	 * XP remaining to reach goal.
 	 */
 	public int xpRemaining()
 	{
 		int currentXp = client.getSkillExperience(Skill.CRAFTING);
-		int targetXp = xpForLevel(config.targetLevel());
+		int targetXp;
+
+		switch (config.goalType())
+		{
+			case TARGET_LEVEL:
+				targetXp = xpForLevel(config.targetLevel());
+				break;
+			case TARGET_XP:
+				targetXp = config.targetXp();
+				break;
+			case TARGET_GLASS:
+				// XP from blowing the target amount of glass
+				targetXp = currentXp + (int) (config.targetGlass() * config.glassItem().getXpPerGlass());
+				break;
+			default:
+				targetXp = xpForLevel(99);
+		}
+
 		return Math.max(0, targetXp - currentXp);
 	}
 
 	/**
-	 * Molten glass needed to reach target level (blown into unpowered orbs).
+	 * Molten glass needed to reach goal.
 	 */
 	public int glassNeeded()
 	{
-		return (int) Math.ceil(xpRemaining() / CRAFTING_XP_PER_GLASS_BLOW);
+		if (config.goalType() == GoalType.TARGET_GLASS)
+		{
+			return config.targetGlass();
+		}
+		return (int) Math.ceil(xpRemaining() / config.glassItem().getXpPerGlass());
 	}
 
 	/**
@@ -88,14 +109,44 @@ public class GoalCalculator
 	public double progress()
 	{
 		int currentXp = client.getSkillExperience(Skill.CRAFTING);
-		int currentLevelXp = xpForLevel(client.getRealSkillLevel(Skill.CRAFTING));
-		int targetXp = xpForLevel(config.targetLevel());
 
-		if (targetXp <= currentLevelXp)
+		switch (config.goalType())
 		{
-			return 1.0;
+			case TARGET_LEVEL:
+			{
+				int startXp = xpForLevel(client.getRealSkillLevel(Skill.CRAFTING));
+				int targetXp = xpForLevel(config.targetLevel());
+				if (targetXp <= startXp) return 1.0;
+				return (double) (currentXp - startXp) / (targetXp - startXp);
+			}
+			case TARGET_XP:
+			{
+				int startXp = xpForLevel(client.getRealSkillLevel(Skill.CRAFTING));
+				int targetXp = config.targetXp();
+				if (targetXp <= currentXp) return 1.0;
+				return (double) (currentXp - startXp) / (targetXp - startXp);
+			}
+			case TARGET_GLASS:
+			default:
+				return 0.0; // Can't easily track glass progress without session data
 		}
+	}
 
-		return (double) (currentXp - currentLevelXp) / (targetXp - currentLevelXp);
+	/**
+	 * Human-readable goal description for the panel header.
+	 */
+	public String goalDescription()
+	{
+		switch (config.goalType())
+		{
+			case TARGET_LEVEL:
+				return "Level " + config.targetLevel();
+			case TARGET_XP:
+				return config.targetXp() + " XP";
+			case TARGET_GLASS:
+				return config.targetGlass() + " glass";
+			default:
+				return "Goal";
+		}
 	}
 }

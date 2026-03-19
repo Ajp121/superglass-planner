@@ -106,7 +106,7 @@ public class SuperglassPlannerPanel extends PluginPanel
 
 	private JPanel createGoalSection()
 	{
-		JPanel section = createSection("Goal (Level " + config.targetLevel() + ")");
+		JPanel section = createSection("Goal");
 
 		section.add(createRow("XP Remaining:", xpRemainingLabel));
 		section.add(createRow("Glass Needed:", glassNeededLabel));
