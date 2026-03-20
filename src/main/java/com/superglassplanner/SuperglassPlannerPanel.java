@@ -429,7 +429,7 @@ private void setDeficit(JLabel label, int deficit, String goodText)
 {
 	if (deficit > 0)
 	{
-		label.setText("+" + FORMAT.format(deficit));
+		label.setText("-" + FORMAT.format(deficit));
 		label.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
 	}
 	else
