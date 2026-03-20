@@ -5,7 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.GameTick;
+import net.runelite.api.events.ItemContainerChanged;
+import net.runelite.api.events.StatChanged;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
@@ -58,7 +59,6 @@ public class SuperglassPlannerPlugin extends Plugin
 	private SuperglassPlannerPanel panel;
 
 	private NavigationButton navButton;
-	private int tickCounter;
 
 	@Override
 	protected void startUp() throws Exception
@@ -104,11 +104,18 @@ public class SuperglassPlannerPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onGameTick(GameTick event)
+	public void onItemContainerChanged(ItemContainerChanged event)
 	{
-		// Update panel every 2 ticks (~1.2 seconds) for responsive UI
-		tickCounter++;
-		if (tickCounter % 2 == 0)
+		if (panel.isActive())
+		{
+			panel.update();
+		}
+	}
+
+	@Subscribe
+	public void onStatChanged(StatChanged event)
+	{
+		if (panel.isActive())
 		{
 			panel.update();
 		}

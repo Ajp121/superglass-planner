@@ -71,6 +71,7 @@ public class SuperglassPlannerPanel extends PluginPanel
 	private JPanel bankNotLoadedPanel;
 	private JPanel bankWrapper;
 	private boolean updatingControls = false;
+	private boolean active = false;
 
 	@Inject
 	public SuperglassPlannerPanel(
@@ -114,9 +115,20 @@ public class SuperglassPlannerPanel extends PluginPanel
 	@Override
 	public void onActivate()
 	{
-		// Apply FlatLaf dark theme to the entire panel tree.
-		// Safe now because we don't set custom backgrounds.
+		active = true;
 		SwingUtilities.updateComponentTreeUI(this);
+		update();
+	}
+
+	@Override
+	public void onDeactivate()
+	{
+		active = false;
+	}
+
+	public boolean isActive()
+	{
+		return active;
 	}
 
 	private static JLabel valueLabel()
@@ -147,6 +159,7 @@ public class SuperglassPlannerPanel extends PluginPanel
 			updatingControls = true;
 			syncTargetSpinner();
 			updatingControls = false;
+			update();
 		});
 
 		targetSpinner.addChangeListener(e ->
@@ -166,24 +179,28 @@ public class SuperglassPlannerPanel extends PluginPanel
 				configManager.setConfiguration(CONFIG_GROUP, "targetGlass", value);
 				break;
 			}
+			update();
 		});
 
 		glassItemCombo.addActionListener(e ->
 		{
 			if (updatingControls) return;
 			configManager.setConfiguration(CONFIG_GROUP, "glassItem", glassItemCombo.getSelectedItem());
+			update();
 		});
 
 		pickupCheckbox.addActionListener(e ->
 		{
 			if (updatingControls) return;
 			configManager.setConfiguration(CONFIG_GROUP, "pickupExtraGlass", pickupCheckbox.isSelected());
+			update();
 		});
 
 		existingGlassCheckbox.addActionListener(e ->
 		{
 			if (updatingControls) return;
 			configManager.setConfiguration(CONFIG_GROUP, "factorExistingGlass", existingGlassCheckbox.isSelected());
+			update();
 		});
 	}
 
