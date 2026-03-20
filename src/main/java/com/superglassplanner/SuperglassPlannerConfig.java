@@ -9,7 +9,7 @@ import net.runelite.client.config.ConfigSection;
 public interface SuperglassPlannerConfig extends Config
 {
 	@ConfigSection(
-		name = "Overlay",
+		name = "Superglass Make Overlay",
 		description = "Overlay display settings",
 		position = 0
 	)
@@ -118,5 +118,17 @@ public interface SuperglassPlannerConfig extends Config
 	default boolean overlayCastsToGoal()
 	{
 		return false;
+	}
+
+	@ConfigItem(
+		keyName = "overlayTimeout",
+		name = "Overlay Timeout (minutes)",
+		description = "Hide overlay after this many minutes of no casts, 0 = never hide",
+		section = overlaySection,
+		position = 2
+	)
+	default int overlayTimeout()
+	{
+		return 2;
 	}
 }

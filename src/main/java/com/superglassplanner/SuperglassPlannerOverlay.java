@@ -45,9 +45,19 @@ public class SuperglassPlannerOverlay extends OverlayPanel
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		if (!config.showOverlay())
+		if (!config.showOverlay() || sessionTracker.getCastCount() == 0)
 		{
 			return null;
+		}
+
+		int timeoutMinutes = config.overlayTimeout();
+		if (timeoutMinutes > 0 && sessionTracker.getLastCastMillis() > 0)
+		{
+			long elapsed = System.currentTimeMillis() - sessionTracker.getLastCastMillis();
+			if (elapsed > timeoutMinutes * 60_000L)
+			{
+				return null;
+			}
 		}
 
 		panelComponent.getChildren().add(TitleComponent.builder()

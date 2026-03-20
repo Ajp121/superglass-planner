@@ -31,6 +31,9 @@ public class SessionTracker
 	private int castCount;
 
 	@Getter
+	private long lastCastMillis;
+
+	@Getter
 	private int craftingXpGained;
 
 	@Getter
@@ -57,6 +60,7 @@ public class SessionTracker
 		if (event.getActor().getAnimation() == SUPERGLASS_MAKE_ANIMATION)
 		{
 			castCount++;
+			lastCastMillis = System.currentTimeMillis();
 			log.debug("Superglass Make cast detected! Total casts: {}", castCount);
 		}
 	}
@@ -147,6 +151,7 @@ public class SessionTracker
 	public void reset()
 	{
 		castCount = 0;
+		lastCastMillis = 0;
 		craftingXpGained = 0;
 		magicXpGained = 0;
 		glassProduced = 0;

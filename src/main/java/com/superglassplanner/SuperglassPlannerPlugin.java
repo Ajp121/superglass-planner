@@ -100,6 +100,7 @@ public class SuperglassPlannerPlugin extends Plugin
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
 		{
 			bankScanner.reset();
+			sessionTracker.reset();
 		}
 	}
 
