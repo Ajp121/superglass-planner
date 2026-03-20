@@ -266,6 +266,38 @@ public class BankScanner
 		return Math.max(0, needed - totalAstralRunes());
 	}
 
+	// Perspective-based: "to use all of X, how much more Y do I need?"
+
+	public int castsFromSeaweed()
+	{
+		return giantSeaweedCount / GIANT_SEAWEED_PER_CAST;
+	}
+
+	public int castsFromSand()
+	{
+		return bucketOfSandCount / SAND_PER_CAST;
+	}
+
+	public int castsFromAstrals()
+	{
+		return totalAstralRunes() / ASTRAL_RUNES_PER_CAST;
+	}
+
+	public int sandNeededForCasts(int casts)
+	{
+		return Math.max(0, casts * SAND_PER_CAST - bucketOfSandCount);
+	}
+
+	public int seaweedNeededForCasts(int casts)
+	{
+		return Math.max(0, casts * GIANT_SEAWEED_PER_CAST - giantSeaweedCount);
+	}
+
+	public int astralsNeededForCasts(int casts)
+	{
+		return Math.max(0, casts * ASTRAL_RUNES_PER_CAST - totalAstralRunes());
+	}
+
 	public void reset()
 	{
 		giantSeaweedCount = 0;

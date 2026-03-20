@@ -40,9 +40,12 @@ public class SuperglassPlannerPanel extends PluginPanel
 	private final JLabel astralRuneLabel = valueLabel();
 	private final JLabel possibleCastsLabel = valueLabel();
 	private final JLabel estimatedGlassLabel = valueLabel();
-	private final JLabel bankSeaweedNeededLabel = valueLabel();
-	private final JLabel bankSandNeededLabel = valueLabel();
-	private final JLabel bankAstralsNeededLabel = valueLabel();
+	private final JLabel bankBalanceLabel1 = valueLabel();
+	private final JLabel bankBalanceLabel2 = valueLabel();
+	private final JLabel bankBalanceName1 = new JLabel();
+	private final JLabel bankBalanceName2 = new JLabel();
+	private final JLabel balanceHeaderLabel = new JLabel("To Use All Seaweed");
+	private int balanceMode = 0; // 0=seaweed, 1=sand, 2=astrals
 
 	// Goal labels
 	private final JLabel goalHeaderLabel = new JLabel();
@@ -60,6 +63,8 @@ public class SuperglassPlannerPanel extends PluginPanel
 	private final JLabel targetLabel = new JLabel("Target Level");
 	private final JCheckBox pickupCheckbox = new JCheckBox();
 	private final JCheckBox existingGlassCheckbox = new JCheckBox();
+	private final JLabel bankWarningLabel = new JLabel("Open bank to update glass count");
+	private JPanel bankWarningWrapper;
 
 	// Session labels
 	private final JLabel sessionCastsLabel = valueLabel();
@@ -285,10 +290,31 @@ private void buildBankSection(JPanel parent)
 	bankDataPanel.add(row("Astral Runes", astralRuneLabel));
 	bankDataPanel.add(row("Possible Casts", possibleCastsLabel));
 	bankDataPanel.add(row("Est. Glass", estimatedGlassLabel));
-	bankDataPanel.add(subHeader("Material Balance"));
-	bankDataPanel.add(row("Seaweed", bankSeaweedNeededLabel));
-	bankDataPanel.add(row("Sand", bankSandNeededLabel));
-	bankDataPanel.add(row("Astrals", bankAstralsNeededLabel));
+
+	balanceHeaderLabel.setFont(FontManager.getRunescapeBoldFont());
+	balanceHeaderLabel.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+	balanceHeaderLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+	JPanel balanceHeader = new JPanel(new BorderLayout());
+	balanceHeader.setBorder(new EmptyBorder(2, 0, 0, 0));
+	balanceHeader.add(balanceHeaderLabel, BorderLayout.WEST);
+	balanceHeader.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+	balanceHeader.addMouseListener(new java.awt.event.MouseAdapter()
+	{
+		@Override
+		public void mouseClicked(java.awt.event.MouseEvent e)
+		{
+			balanceMode = (balanceMode + 1) % 3;
+			update();
+		}
+	});
+	bankDataPanel.add(balanceHeader);
+
+	bankBalanceName1.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+	bankBalanceName1.setFont(FontManager.getRunescapeSmallFont());
+	bankBalanceName2.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+	bankBalanceName2.setFont(FontManager.getRunescapeSmallFont());
+	bankDataPanel.add(row(bankBalanceName1, bankBalanceLabel1));
+	bankDataPanel.add(row(bankBalanceName2, bankBalanceLabel2));
 	bankWrapper.add(bankDataPanel, "loaded");
 
 	parent.add(bankWrapper);
@@ -305,6 +331,17 @@ private void buildGoalSection(JPanel parent)
 	parent.add(stackedControl("Glass Item", glassItemCombo));
 	parent.add(row("Pickup extra glass", pickupCheckbox));
 	parent.add(row("Factor existing glass", existingGlassCheckbox));
+	bankWarningLabel.setFont(FontManager.getRunescapeFont());
+	bankWarningLabel.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
+	bankWarningWrapper = new JPanel(new BorderLayout()) {
+		@Override
+		public Dimension getPreferredSize()
+		{
+			if (getComponentCount() == 0) return new Dimension(0, 0);
+			return super.getPreferredSize();
+		}
+	};
+	parent.add(bankWarningWrapper);
 	parent.add(row("XP Remaining", xpRemainingLabel));
 	parent.add(row("Glass Needed", glassNeededLabel));
 	parent.add(row("Casts Needed", castsNeededLabel));
@@ -412,13 +449,28 @@ public void update()
 		estimatedGlassLabel.setText(FORMAT.format(bankScanner.estimatedGlass(config.pickupExtraGlass())));
 		estimatedGlassLabel.setForeground(VALUE_HIGHLIGHT);
 
-		setDeficit(bankSeaweedNeededLabel, bankScanner.seaweedDeficit(), "Balanced");
-		setDeficit(bankSandNeededLabel, bankScanner.sandDeficit(), "Balanced");
-		setDeficit(bankAstralsNeededLabel, bankScanner.astralDeficit(), "Balanced");
+		updateBalanceSection();
 	}
 	else
 	{
 		((CardLayout) bankWrapper.getLayout()).show(bankWrapper, "notLoaded");
+	}
+
+	if (config.factorExistingGlass() && !bankScanner.isBankLoaded())
+	{
+		if (bankWarningWrapper.getComponentCount() == 0)
+		{
+			bankWarningWrapper.add(bankWarningLabel, BorderLayout.CENTER);
+			bankWarningWrapper.revalidate();
+		}
+	}
+	else
+	{
+		if (bankWarningWrapper.getComponentCount() > 0)
+		{
+			bankWarningWrapper.removeAll();
+			bankWarningWrapper.revalidate();
+		}
 	}
 
 	xpRemainingLabel.setText(FORMAT.format(goalCalculator.xpRemaining()));
@@ -444,6 +496,46 @@ private void updateSessionLabel(JLabel label, int value)
 {
 	label.setText(FORMAT.format(value));
 	label.setForeground(value == 0 ? DIMMED_VALUE : Color.WHITE);
+}
+
+private void updateBalanceSection()
+{
+	int casts;
+	String name1, name2;
+	int need1, need2;
+
+	switch (balanceMode)
+	{
+		case 0: // Use all seaweed
+			balanceHeaderLabel.setText("To Use All Seaweed \u25B6");
+			casts = bankScanner.castsFromSeaweed();
+			name1 = "Sand";
+			name2 = "Astrals";
+			need1 = bankScanner.sandNeededForCasts(casts);
+			need2 = bankScanner.astralsNeededForCasts(casts);
+			break;
+		case 1: // Use all sand
+			balanceHeaderLabel.setText("To Use All Sand \u25B6");
+			casts = bankScanner.castsFromSand();
+			name1 = "Seaweed";
+			name2 = "Astrals";
+			need1 = bankScanner.seaweedNeededForCasts(casts);
+			need2 = bankScanner.astralsNeededForCasts(casts);
+			break;
+		default: // Use all astrals
+			balanceHeaderLabel.setText("To Use All Astrals \u25B6");
+			casts = bankScanner.castsFromAstrals();
+			name1 = "Seaweed";
+			name2 = "Sand";
+			need1 = bankScanner.seaweedNeededForCasts(casts);
+			need2 = bankScanner.sandNeededForCasts(casts);
+			break;
+	}
+
+	bankBalanceName1.setText(name1);
+	bankBalanceName2.setText(name2);
+	setDeficit(bankBalanceLabel1, need1, "OK");
+	setDeficit(bankBalanceLabel2, need2, "OK");
 }
 
 private void setDeficit(JLabel label, int deficit, String goodText)
