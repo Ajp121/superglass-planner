@@ -338,11 +338,15 @@ private void buildSessionSection(JPanel parent)
 
 private JPanel row(String label, JComponent value)
 {
-	JPanel r = new JPanel(new BorderLayout());
-
 	JLabel name = new JLabel(label);
 	name.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 	name.setFont(FontManager.getRunescapeSmallFont());
+	return row(name, value);
+}
+
+private JPanel row(JLabel name, JComponent value)
+{
+	JPanel r = new JPanel(new BorderLayout());
 	r.add(name, BorderLayout.CENTER);
 	r.add(value, BorderLayout.EAST);
 	return r;

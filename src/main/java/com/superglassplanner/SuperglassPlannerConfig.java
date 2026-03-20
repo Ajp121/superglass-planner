@@ -9,25 +9,19 @@ import net.runelite.client.config.ConfigSection;
 public interface SuperglassPlannerConfig extends Config
 {
 	@ConfigSection(
-		name = "Goals",
-		description = "Crafting goal settings",
+		name = "Overlay",
+		description = "Overlay display settings",
 		position = 0
 	)
-	String goalsSection = "goals";
+	String overlaySection = "overlay";
 
-	@ConfigSection(
-		name = "Reminders",
-		description = "Daily and farming reminders",
-		position = 1
-	)
-	String remindersSection = "reminders";
+	// Goal settings — controlled from the side panel, hidden from config page
 
 	@ConfigItem(
 		keyName = "goalType",
 		name = "Goal Type",
 		description = "What kind of goal to track",
-		section = goalsSection,
-		position = 0
+		hidden = true
 	)
 	default GoalType goalType()
 	{
@@ -37,9 +31,8 @@ public interface SuperglassPlannerConfig extends Config
 	@ConfigItem(
 		keyName = "targetLevel",
 		name = "Target Crafting Level",
-		description = "The Crafting level you are working towards (used when Goal Type is Target Level)",
-		section = goalsSection,
-		position = 1
+		description = "The Crafting level you are working towards",
+		hidden = true
 	)
 	default int targetLevel()
 	{
@@ -49,9 +42,8 @@ public interface SuperglassPlannerConfig extends Config
 	@ConfigItem(
 		keyName = "targetXp",
 		name = "Target XP",
-		description = "The total Crafting XP you are working towards (used when Goal Type is Target XP)",
-		section = goalsSection,
-		position = 2
+		description = "The total Crafting XP you are working towards",
+		hidden = true
 	)
 	default int targetXp()
 	{
@@ -61,9 +53,8 @@ public interface SuperglassPlannerConfig extends Config
 	@ConfigItem(
 		keyName = "targetGlass",
 		name = "Target Glass Amount",
-		description = "How many molten glass you want to produce (used when Goal Type is Target Glass)",
-		section = goalsSection,
-		position = 3
+		description = "How many molten glass you want to produce",
+		hidden = true
 	)
 	default int targetGlass()
 	{
@@ -73,9 +64,8 @@ public interface SuperglassPlannerConfig extends Config
 	@ConfigItem(
 		keyName = "glassItem",
 		name = "Glass Item to Blow",
-		description = "Which item you plan to blow from the molten glass (affects XP calculations)",
-		section = goalsSection,
-		position = 4
+		description = "Which item you plan to blow from the molten glass",
+		hidden = true
 	)
 	default GlassItem glassItem()
 	{
@@ -86,8 +76,7 @@ public interface SuperglassPlannerConfig extends Config
 		keyName = "pickupExtraGlass",
 		name = "Pickup Extra Glass",
 		description = "Whether you pick up bonus molten glass from the floor after casting",
-		section = goalsSection,
-		position = 5
+		hidden = true
 	)
 	default boolean pickupExtraGlass()
 	{
@@ -98,46 +87,36 @@ public interface SuperglassPlannerConfig extends Config
 		keyName = "factorExistingGlass",
 		name = "Factor Existing Glass",
 		description = "Subtract molten glass already in bank/looting bag from glass needed calculations",
-		section = goalsSection,
-		position = 6
+		hidden = true
 	)
 	default boolean factorExistingGlass()
 	{
 		return false;
 	}
 
-	@ConfigItem(
-		keyName = "bertReminder",
-		name = "Bert Daily Sand Reminder",
-		description = "Remind you to collect 84 daily sand from Bert (Hand in the Sand quest)",
-		section = remindersSection,
-		position = 0
-	)
-	default boolean bertReminder()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "seaweedFarmReminder",
-		name = "Seaweed Farm Reminder",
-		description = "Remind you when underwater seaweed patches are ready to harvest",
-		section = remindersSection,
-		position = 1
-	)
-	default boolean seaweedFarmReminder()
-	{
-		return true;
-	}
+	// Overlay — visible on config page
 
 	@ConfigItem(
 		keyName = "showOverlay",
 		name = "Show Overlay",
 		description = "Display a compact overlay with key stats near the inventory",
-		position = 2
+		section = overlaySection,
+		position = 0
 	)
 	default boolean showOverlay()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+		keyName = "overlayCastsToGoal",
+		name = "Show Casts to Goal",
+		description = "Show casts remaining to reach goal instead of total available casts",
+		section = overlaySection,
+		position = 1
+	)
+	default boolean overlayCastsToGoal()
+	{
+		return false;
 	}
 }

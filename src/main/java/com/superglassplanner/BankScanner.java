@@ -53,6 +53,8 @@ public class BankScanner
 	@Getter
 	private int lootingBagGlassCount;
 
+	private int inventoryGlassCount;
+
 	@Getter
 	private boolean bankLoaded;
 
@@ -69,6 +71,10 @@ public class BankScanner
 		else if (containerId == LOOTING_BAG_CONTAINER_ID)
 		{
 			updateLootingBagCounts(event.getItemContainer());
+		}
+		else if (containerId == InventoryID.INVENTORY.getId())
+		{
+			updateInventoryCounts(event.getItemContainer());
 		}
 	}
 
@@ -134,12 +140,28 @@ public class BankScanner
 		log.debug("Looting bag glass: {}", lootingBagGlassCount);
 	}
 
+	private void updateInventoryCounts(ItemContainer inventory)
+	{
+		inventoryGlassCount = 0;
+		if (inventory == null)
+		{
+			return;
+		}
+		for (Item item : inventory.getItems())
+		{
+			if (item != null && item.getId() == MOLTEN_GLASS)
+			{
+				inventoryGlassCount += item.getQuantity();
+			}
+		}
+	}
+
 	/**
-	 * Total molten glass across bank + looting bag.
+	 * Total molten glass across bank + looting bag + inventory.
 	 */
 	public int totalMoltenGlass()
 	{
-		return moltenGlassCount + lootingBagGlassCount;
+		return moltenGlassCount + lootingBagGlassCount + inventoryGlassCount;
 	}
 
 	/**
@@ -253,6 +275,7 @@ public class BankScanner
 		astralRuneCount = 0;
 		runePouchAstralCount = 0;
 		lootingBagGlassCount = 0;
+		inventoryGlassCount = 0;
 		bankLoaded = false;
 	}
 }

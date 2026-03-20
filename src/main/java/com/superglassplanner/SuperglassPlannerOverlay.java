@@ -20,6 +20,7 @@ public class SuperglassPlannerOverlay extends OverlayPanel
 	private final SuperglassPlannerConfig config;
 	private final BankScanner bankScanner;
 	private final SessionTracker sessionTracker;
+	private final GoalCalculator goalCalculator;
 
 	private static final NumberFormat FORMAT = NumberFormat.getIntegerInstance();
 
@@ -28,12 +29,14 @@ public class SuperglassPlannerOverlay extends OverlayPanel
 		Client client,
 		SuperglassPlannerConfig config,
 		BankScanner bankScanner,
-		SessionTracker sessionTracker)
+		SessionTracker sessionTracker,
+		GoalCalculator goalCalculator)
 	{
 		this.client = client;
 		this.config = config;
 		this.bankScanner = bankScanner;
 		this.sessionTracker = sessionTracker;
+		this.goalCalculator = goalCalculator;
 
 		setPosition(OverlayPosition.TOP_LEFT);
 		setPriority(OverlayPriority.LOW);
@@ -52,7 +55,14 @@ public class SuperglassPlannerOverlay extends OverlayPanel
 			.color(new Color(255, 152, 0))
 			.build());
 
-		if (bankScanner.isBankLoaded())
+		if (config.overlayCastsToGoal())
+		{
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left("Casts to Goal:")
+				.right(FORMAT.format(goalCalculator.castsNeeded()))
+				.build());
+		}
+		else if (bankScanner.isBankLoaded())
 		{
 			panelComponent.getChildren().add(LineComponent.builder()
 				.left("Casts Left:")
