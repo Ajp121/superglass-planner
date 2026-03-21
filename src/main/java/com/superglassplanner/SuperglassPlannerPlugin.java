@@ -56,6 +56,12 @@ public class SuperglassPlannerPlugin extends Plugin
 	private SuperglassPlannerOverlay overlay;
 
 	@Inject
+	private GlassblowingTracker glassblowingTracker;
+
+	@Inject
+	private GlassblowingOverlay glassblowingOverlay;
+
+	@Inject
 	private SuperglassPlannerPanel panel;
 
 	private NavigationButton navButton;
@@ -67,8 +73,10 @@ public class SuperglassPlannerPlugin extends Plugin
 
 		eventBus.register(bankScanner);
 		eventBus.register(sessionTracker);
+		eventBus.register(glassblowingTracker);
 
 		overlayManager.add(overlay);
+		overlayManager.add(glassblowingOverlay);
 
 		navButton = NavigationButton.builder()
 			.tooltip("Superglass Planner")
@@ -86,12 +94,15 @@ public class SuperglassPlannerPlugin extends Plugin
 
 		eventBus.unregister(bankScanner);
 		eventBus.unregister(sessionTracker);
+		eventBus.unregister(glassblowingTracker);
 
 		overlayManager.remove(overlay);
+		overlayManager.remove(glassblowingOverlay);
 		clientToolbar.removeNavigation(navButton);
 
 		bankScanner.reset();
 		sessionTracker.reset();
+		glassblowingTracker.reset();
 	}
 
 	@Subscribe
@@ -101,6 +112,7 @@ public class SuperglassPlannerPlugin extends Plugin
 		{
 			bankScanner.reset();
 			sessionTracker.reset();
+			glassblowingTracker.reset();
 		}
 	}
 

@@ -39,8 +39,9 @@ public final class SuperglassConstants
 	// Seaweed farm cycle (40 minutes in milliseconds)
 	public static final long SEAWEED_GROWTH_TIME_MS = 40 * 60 * 1000L;
 
-	// Animation ID for Superglass Make
+	// Animation IDs
 	public static final int SUPERGLASS_MAKE_ANIMATION = 4413;
+	public static final int GLASSBLOWING_ANIMATION = 884;
 
 	// Crafting XP table (level -> total XP)
 	private static final int[] XP_TABLE = new int[100];

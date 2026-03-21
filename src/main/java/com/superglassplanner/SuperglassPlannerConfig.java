@@ -131,4 +131,37 @@ public interface SuperglassPlannerConfig extends Config
 	{
 		return 2;
 	}
+
+	// Glassblowing overlay
+
+	@ConfigSection(
+		name = "Glassblowing Overlay",
+		description = "Overlay display settings for blowing molten glass",
+		position = 1
+	)
+	String glassblowingSection = "glassblowing";
+
+	@ConfigItem(
+		keyName = "showGlassblowingOverlay",
+		name = "Show Overlay",
+		description = "Display a compact overlay while blowing molten glass",
+		section = glassblowingSection,
+		position = 0
+	)
+	default boolean showGlassblowingOverlay()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "glassblowingTimeout",
+		name = "Overlay Timeout (minutes)",
+		description = "Hide overlay after this many minutes of no glassblowing, 0 = never hide",
+		section = glassblowingSection,
+		position = 1
+	)
+	default int glassblowingTimeout()
+	{
+		return 2;
+	}
 }
