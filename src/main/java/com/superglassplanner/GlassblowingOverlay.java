@@ -17,16 +17,19 @@ public class GlassblowingOverlay extends OverlayPanel
 {
 	private final SuperglassPlannerConfig config;
 	private final GlassblowingTracker tracker;
+	private final GoalCalculator goalCalculator;
 
 	private static final NumberFormat FORMAT = NumberFormat.getIntegerInstance();
 
 	@Inject
 	public GlassblowingOverlay(
 		SuperglassPlannerConfig config,
-		GlassblowingTracker tracker)
+		GlassblowingTracker tracker,
+		GoalCalculator goalCalculator)
 	{
 		this.config = config;
 		this.tracker = tracker;
+		this.goalCalculator = goalCalculator;
 
 		setPosition(OverlayPosition.TOP_LEFT);
 		setPriority(OverlayPriority.LOW);
@@ -59,6 +62,15 @@ public class GlassblowingOverlay extends OverlayPanel
 			.left("Items Blown:")
 			.right(FORMAT.format(tracker.getItemsBlown()))
 			.build());
+
+		int toGoal = goalCalculator.glassNeeded();
+		if (toGoal > 0)
+		{
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left("Items to Goal:")
+				.right(FORMAT.format(toGoal))
+				.build());
+		}
 
 		panelComponent.getChildren().add(LineComponent.builder()
 			.left("Crafting XP:")
