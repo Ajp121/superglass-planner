@@ -63,7 +63,7 @@ public class GlassblowingOverlay extends OverlayPanel
 			.right(FORMAT.format(tracker.getItemsBlown()))
 			.build());
 
-		int toGoal = goalCalculator.glassNeeded();
+		int toGoal = goalCalculator.itemsToBlowForGoal();
 		if (toGoal > 0)
 		{
 			panelComponent.getChildren().add(LineComponent.builder()

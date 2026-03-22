@@ -98,6 +98,16 @@ public class GoalCalculator
 	}
 
 	/**
+	 * Glass items still needed to blow to reach goal (XP remaining / XP per blow).
+	 */
+	public int itemsToBlowForGoal()
+	{
+		double xpPerItem = config.glassItem().getXpPerGlass();
+		if (xpPerItem <= 0) return 0;
+		return (int) Math.ceil(xpRemaining() / xpPerItem);
+	}
+
+	/**
 	 * Giant seaweed needed.
 	 */
 	public int seaweedNeeded()
