@@ -123,6 +123,17 @@ public class GlassblowingTracker
 		return inv != null ? countItem(inv, MOLTEN_GLASS) : 0;
 	}
 
+	/**
+	 * Resets only transient detection state so tracking resumes
+	 * correctly after logout without losing accumulated stats.
+	 */
+	public void softReset()
+	{
+		lastCraftingXp = -1;
+		lastInventoryGlassCount = -1;
+		blowing = false;
+	}
+
 	public void reset()
 	{
 		itemsBlown = 0;

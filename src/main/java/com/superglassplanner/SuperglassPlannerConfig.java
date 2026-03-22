@@ -97,6 +97,17 @@ public interface SuperglassPlannerConfig extends Config
 	// Overlay — visible on config page
 
 	@ConfigItem(
+		keyName = "resetOnLogout",
+		name = "Reset Session on Logout",
+		description = "Clear all session stats when you log out",
+		position = -1
+	)
+	default boolean resetOnLogout()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "showOverlay",
 		name = "Show Overlay",
 		description = "Display a compact overlay with key stats near the inventory",
@@ -154,11 +165,35 @@ public interface SuperglassPlannerConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "glassblowingItemsToGoal",
+		name = "Show Items to Goal",
+		description = "Show items to goal instead of items to next level",
+		section = glassblowingSection,
+		position = 1
+	)
+	default boolean glassblowingItemsToGoal()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "glassblowingFactorMakeXp",
+		name = "Factor Make XP",
+		description = "Factor Superglass Make XP into items remaining (only applies in goal mode)",
+		section = glassblowingSection,
+		position = 2
+	)
+	default boolean glassblowingFactorMakeXp()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "glassblowingTimeout",
 		name = "Overlay Timeout (minutes)",
 		description = "Hide overlay after this many minutes of no glassblowing, 0 = never hide",
 		section = glassblowingSection,
-		position = 1
+		position = 3
 	)
 	default int glassblowingTimeout()
 	{

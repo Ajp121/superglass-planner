@@ -63,24 +63,34 @@ public class GlassblowingOverlay extends OverlayPanel
 			.right(FORMAT.format(tracker.getItemsBlown()))
 			.build());
 
-		int toGoal = goalCalculator.itemsToBlowForGoal();
-		if (toGoal > 0)
+		if (config.glassblowingItemsToGoal())
 		{
-			panelComponent.getChildren().add(LineComponent.builder()
-				.left("Items to Goal:")
-				.right(FORMAT.format(toGoal))
-				.build());
+			int toGoal = config.glassblowingFactorMakeXp()
+				? goalCalculator.totalItemsToBlow()
+				: goalCalculator.itemsToBlowForGoal();
+			if (toGoal > 0)
+			{
+				panelComponent.getChildren().add(LineComponent.builder()
+					.left("Items to Goal:")
+					.right(FORMAT.format(toGoal))
+					.build());
+			}
+		}
+		else
+		{
+			int toLevel = goalCalculator.itemsToBlowForLevel();
+			if (toLevel > 0)
+			{
+				panelComponent.getChildren().add(LineComponent.builder()
+					.left("Items to Level:")
+					.right(FORMAT.format(toLevel))
+					.build());
+			}
 		}
 
 		panelComponent.getChildren().add(LineComponent.builder()
 			.left("Crafting XP:")
 			.right(FORMAT.format(tracker.getCraftingXpGained()))
-			.build());
-
-		int remaining = tracker.getGlassRemaining();
-		panelComponent.getChildren().add(LineComponent.builder()
-			.left("Glass Left:")
-			.right(FORMAT.format(remaining))
 			.build());
 
 		return super.render(graphics);

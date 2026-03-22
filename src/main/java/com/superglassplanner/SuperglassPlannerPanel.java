@@ -1,5 +1,7 @@
 package com.superglassplanner;
 
+import net.runelite.api.Client;
+import net.runelite.api.GameState;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.DynamicGridLayout;
@@ -27,11 +29,13 @@ public class SuperglassPlannerPanel extends PluginPanel
 	private static final Color VALUE_HIGHLIGHT = new Color(190, 210, 255);
 	private static final Color DIMMED_VALUE = new Color(120, 120, 120);
 
+	private final Client client;
 	private final SuperglassPlannerConfig config;
 	private final ConfigManager configManager;
 	private final BankScanner bankScanner;
 	private final GoalCalculator goalCalculator;
 	private final SessionTracker sessionTracker;
+	private final GlassblowingTracker glassblowingTracker;
 
 	// Bank labels
 	private final JLabel giantSeaweedLabel = valueLabel();
@@ -51,6 +55,7 @@ public class SuperglassPlannerPanel extends PluginPanel
 	private final JLabel goalHeaderLabel = new JLabel();
 	private final JLabel xpRemainingLabel = valueLabel();
 	private final JLabel glassNeededLabel = valueLabel();
+	private final JLabel itemsToBlowLabel = valueLabel();
 	private final JLabel castsNeededLabel = valueLabel();
 	private final JLabel seaweedDeficitLabel = valueLabel();
 	private final JLabel sandDeficitLabel = valueLabel();
@@ -69,30 +74,36 @@ public class SuperglassPlannerPanel extends PluginPanel
 	// Session labels
 	private final JLabel sessionCastsLabel = valueLabel();
 	private final JLabel sessionGlassLabel = valueLabel();
+	private final JLabel sessionItemsBlownLabel = valueLabel();
 	private final JLabel sessionCraftXpLabel = valueLabel();
 	private final JLabel sessionMagicXpLabel = valueLabel();
 
 	private JPanel bankDataPanel;
 	private JPanel bankNotLoadedPanel;
 	private JPanel bankWrapper;
+	private JPanel goalWrapper;
 	private boolean updatingControls = false;
 	private boolean active = false;
 
 	@Inject
 	public SuperglassPlannerPanel(
+	Client client,
 	SuperglassPlannerConfig config,
 	ConfigManager configManager,
 	BankScanner bankScanner,
 	GoalCalculator goalCalculator,
-	SessionTracker sessionTracker)
+	SessionTracker sessionTracker,
+	GlassblowingTracker glassblowingTracker)
 	{
 		super(false);
 
+		this.client = client;
 		this.config = config;
 		this.configManager = configManager;
 		this.bankScanner = bankScanner;
 		this.goalCalculator = goalCalculator;
 		this.sessionTracker = sessionTracker;
+		this.glassblowingTracker = glassblowingTracker;
 
 		setLayout(new BorderLayout());
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
@@ -342,11 +353,27 @@ private void buildGoalSection(JPanel parent)
 		}
 	};
 	parent.add(bankWarningWrapper);
-	parent.add(row("XP Remaining", xpRemainingLabel));
-	parent.add(row("Glass Needed", glassNeededLabel));
-	parent.add(row("Casts Needed", castsNeededLabel));
-	parent.add(row("Seaweed Deficit", seaweedDeficitLabel));
-	parent.add(row("Sand Deficit", sandDeficitLabel));
+
+	goalWrapper = new JPanel(new CardLayout());
+
+	// Not logged in
+	JPanel goalNotLoggedIn = new JPanel(new BorderLayout());
+	goalNotLoggedIn.setBorder(new EmptyBorder(4, 0, 4, 0));
+	JLabel loginMsg = new JLabel("Log in to view goal progress");
+	loginMsg.setFont(FontManager.getRunescapeSmallFont());
+	loginMsg.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+	goalNotLoggedIn.add(loginMsg, BorderLayout.CENTER);
+	goalWrapper.add(goalNotLoggedIn, "notLoggedIn");
+
+	// Logged in
+	JPanel goalDataPanel = new JPanel();
+	goalDataPanel.setLayout(new DynamicGridLayout(0, 1, 0, 3));
+	goalDataPanel.add(row("XP Remaining", xpRemainingLabel));
+	goalDataPanel.add(row("Glass to Make", glassNeededLabel));
+	goalDataPanel.add(row("Items to Blow", itemsToBlowLabel));
+	goalDataPanel.add(row("Casts Needed", castsNeededLabel));
+	goalDataPanel.add(row("Seaweed Deficit", seaweedDeficitLabel));
+	goalDataPanel.add(row("Sand Deficit", sandDeficitLabel));
 
 	goalProgressBar.setMaximumValue(100);
 	goalProgressBar.setValue(0);
@@ -354,7 +381,10 @@ private void buildGoalSection(JPanel parent)
 	goalProgressBar.setForeground(new Color(60, 180, 70));
 	goalProgressBar.setBackground(new Color(60, 60, 60));
 	goalProgressBar.setPreferredSize(new Dimension(0, 16));
-	parent.add(goalProgressBar);
+	goalDataPanel.add(goalProgressBar);
+
+	goalWrapper.add(goalDataPanel, "loggedIn");
+	parent.add(goalWrapper);
 }
 
 private void buildSessionSection(JPanel parent)
@@ -362,12 +392,18 @@ private void buildSessionSection(JPanel parent)
 	parent.add(sectionHeader("Session Stats"));
 	parent.add(row("Casts", sessionCastsLabel));
 	parent.add(row("Glass Made", sessionGlassLabel));
+	parent.add(row("Items Blown", sessionItemsBlownLabel));
 	parent.add(row("Crafting XP", sessionCraftXpLabel));
 	parent.add(row("Magic XP", sessionMagicXpLabel));
 
 	JButton resetButton = new JButton("Reset Session");
 	resetButton.setFocusPainted(false);
-	resetButton.addActionListener(e -> sessionTracker.reset());
+	resetButton.addActionListener(e ->
+	{
+		sessionTracker.reset();
+		glassblowingTracker.reset();
+		update();
+	});
 	parent.add(resetButton);
 }
 
@@ -473,21 +509,34 @@ public void update()
 		}
 	}
 
-	xpRemainingLabel.setText(FORMAT.format(goalCalculator.xpRemaining()));
-	glassNeededLabel.setText(FORMAT.format(goalCalculator.glassNeeded()));
-	castsNeededLabel.setText(FORMAT.format(goalCalculator.castsNeeded()));
-	setDeficit(seaweedDeficitLabel, goalCalculator.seaweedDeficit(), "Enough!");
-	setDeficit(sandDeficitLabel, goalCalculator.sandDeficit(), "Enough!");
+	boolean loggedIn = client.getGameState() == GameState.LOGGED_IN;
 
-	double prog = goalCalculator.progress();
-	goalProgressBar.setValue((int) (prog * 100));
-	goalProgressBar.setCenterLabel(String.format("%.1f%%", prog * 100));
-	goalProgressBar.setForeground(prog >= 1.0
-	? ColorScheme.PROGRESS_COMPLETE_COLOR
-	: prog >= 0.5 ? new Color(60, 180, 70) : ColorScheme.PROGRESS_INPROGRESS_COLOR);
+	if (loggedIn)
+	{
+		((CardLayout) goalWrapper.getLayout()).show(goalWrapper, "loggedIn");
+
+		xpRemainingLabel.setText(FORMAT.format(goalCalculator.xpRemaining()));
+		glassNeededLabel.setText(FORMAT.format(goalCalculator.glassNeeded()));
+		itemsToBlowLabel.setText(FORMAT.format(goalCalculator.totalItemsToBlow()));
+		castsNeededLabel.setText(FORMAT.format(goalCalculator.castsNeeded()));
+		setDeficit(seaweedDeficitLabel, goalCalculator.seaweedDeficit(), "Enough!");
+		setDeficit(sandDeficitLabel, goalCalculator.sandDeficit(), "Enough!");
+
+		double prog = goalCalculator.progress();
+		goalProgressBar.setValue((int) (prog * 100));
+		goalProgressBar.setCenterLabel(String.format("%.1f%%", prog * 100));
+		goalProgressBar.setForeground(prog >= 1.0
+		? ColorScheme.PROGRESS_COMPLETE_COLOR
+		: prog >= 0.5 ? new Color(60, 180, 70) : ColorScheme.PROGRESS_INPROGRESS_COLOR);
+	}
+	else
+	{
+		((CardLayout) goalWrapper.getLayout()).show(goalWrapper, "notLoggedIn");
+	}
 
 	updateSessionLabel(sessionCastsLabel, sessionTracker.getCastCount());
 	updateSessionLabel(sessionGlassLabel, sessionTracker.getGlassProduced());
+	updateSessionLabel(sessionItemsBlownLabel, glassblowingTracker.getItemsBlown());
 	updateSessionLabel(sessionCraftXpLabel, sessionTracker.getCraftingXpGained());
 	updateSessionLabel(sessionMagicXpLabel, sessionTracker.getMagicXpGained());
 }

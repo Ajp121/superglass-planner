@@ -4,6 +4,7 @@ import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.InventoryID;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.StatChanged;
@@ -111,14 +112,29 @@ public class SuperglassPlannerPlugin extends Plugin
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
 		{
 			bankScanner.reset();
-			sessionTracker.reset();
-			glassblowingTracker.reset();
+			if (config.resetOnLogout())
+			{
+				sessionTracker.reset();
+				glassblowingTracker.reset();
+			}
+			else
+			{
+				sessionTracker.softReset();
+				glassblowingTracker.softReset();
+			}
+			panel.update();
 		}
 	}
 
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event)
 	{
+		if (event.getContainerId() == InventoryID.BANK.getId()
+			&& sessionTracker.needsGlassSnapshot())
+		{
+			sessionTracker.snapshotGlass();
+		}
+
 		if (panel.isActive())
 		{
 			panel.update();

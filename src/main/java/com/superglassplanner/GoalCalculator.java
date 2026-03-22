@@ -98,13 +98,42 @@ public class GoalCalculator
 	}
 
 	/**
-	 * Glass items still needed to blow to reach goal (XP remaining / XP per blow).
+	 * Items to blow to reach goal using only blow XP (for overlay during active blowing).
 	 */
 	public int itemsToBlowForGoal()
 	{
 		double xpPerItem = config.glassItem().getXpPerGlass();
 		if (xpPerItem <= 0) return 0;
 		return (int) Math.ceil(xpRemaining() / xpPerItem);
+	}
+
+	/**
+	 * Items to blow to reach the next crafting level using only blow XP.
+	 */
+	public int itemsToBlowForLevel()
+	{
+		double xpPerItem = config.glassItem().getXpPerGlass();
+		if (xpPerItem <= 0) return 0;
+		int currentLevel = client.getRealSkillLevel(Skill.CRAFTING);
+		if (currentLevel >= 99) return 0;
+		int currentXp = client.getSkillExperience(Skill.CRAFTING);
+		int nextLevelXp = xpForLevel(currentLevel + 1);
+		int remaining = Math.max(0, nextLevelXp - currentXp);
+		return (int) Math.ceil(remaining / xpPerItem);
+	}
+
+	/**
+	 * Total items to blow to reach goal, factoring in Superglass Make XP.
+	 * When "factor existing glass" is on, includes existing glass that still needs blowing.
+	 */
+	public int totalItemsToBlow()
+	{
+		if (config.factorExistingGlass())
+		{
+			int existingGlass = bankScanner.totalMoltenGlass();
+			return glassNeeded() + existingGlass;
+		}
+		return glassNeeded();
 	}
 
 	/**

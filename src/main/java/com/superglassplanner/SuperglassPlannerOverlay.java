@@ -72,7 +72,7 @@ public class SuperglassPlannerOverlay extends OverlayPanel
 				.right(FORMAT.format(goalCalculator.castsNeeded()))
 				.build());
 		}
-		else if (bankScanner.isBankLoaded())
+		else
 		{
 			panelComponent.getChildren().add(LineComponent.builder()
 				.left("Casts Left:")

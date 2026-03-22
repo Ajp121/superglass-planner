@@ -54,6 +54,9 @@ public class BankScanner
 	private int lootingBagGlassCount;
 
 	private int inventoryGlassCount;
+	private int inventorySeaweedCount;
+	private int inventorySandCount;
+	private int inventoryAstralCount;
 
 	@Getter
 	private boolean bankLoaded;
@@ -143,15 +146,30 @@ public class BankScanner
 	private void updateInventoryCounts(ItemContainer inventory)
 	{
 		inventoryGlassCount = 0;
+		inventorySeaweedCount = 0;
+		inventorySandCount = 0;
+		inventoryAstralCount = 0;
 		if (inventory == null)
 		{
 			return;
 		}
 		for (Item item : inventory.getItems())
 		{
-			if (item != null && item.getId() == MOLTEN_GLASS)
+			if (item == null) continue;
+			switch (item.getId())
 			{
-				inventoryGlassCount += item.getQuantity();
+				case MOLTEN_GLASS:
+					inventoryGlassCount += item.getQuantity();
+					break;
+				case GIANT_SEAWEED:
+					inventorySeaweedCount += item.getQuantity();
+					break;
+				case BUCKET_OF_SAND:
+					inventorySandCount += item.getQuantity();
+					break;
+				case ASTRAL_RUNE:
+					inventoryAstralCount += item.getQuantity();
+					break;
 			}
 		}
 	}
@@ -162,6 +180,14 @@ public class BankScanner
 	public int totalMoltenGlass()
 	{
 		return moltenGlassCount + lootingBagGlassCount + inventoryGlassCount;
+	}
+
+	/**
+	 * Molten glass in inventory + looting bag only (excludes bank).
+	 */
+	public int nonBankMoltenGlass()
+	{
+		return lootingBagGlassCount + inventoryGlassCount;
 	}
 
 	/**
@@ -199,9 +225,12 @@ public class BankScanner
 	 */
 	public int possibleCasts()
 	{
-		int castsBySeaweed = giantSeaweedCount / GIANT_SEAWEED_PER_CAST;
-		int castsBySand = bucketOfSandCount / SAND_PER_CAST;
-		int castsByAstrals = totalAstralRunes() / ASTRAL_RUNES_PER_CAST;
+		int totalSeaweed = giantSeaweedCount + inventorySeaweedCount;
+		int totalSand = bucketOfSandCount + inventorySandCount;
+		int totalAstrals = totalAstralRunes() + inventoryAstralCount;
+		int castsBySeaweed = totalSeaweed / GIANT_SEAWEED_PER_CAST;
+		int castsBySand = totalSand / SAND_PER_CAST;
+		int castsByAstrals = totalAstrals / ASTRAL_RUNES_PER_CAST;
 		return Math.min(castsBySeaweed, Math.min(castsBySand, castsByAstrals));
 	}
 
@@ -308,6 +337,9 @@ public class BankScanner
 		runePouchAstralCount = 0;
 		lootingBagGlassCount = 0;
 		inventoryGlassCount = 0;
+		inventorySeaweedCount = 0;
+		inventorySandCount = 0;
+		inventoryAstralCount = 0;
 		bankLoaded = false;
 	}
 }
