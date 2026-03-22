@@ -517,8 +517,8 @@ public void update()
 	{
 		((CardLayout) bankWrapper.getLayout()).show(bankWrapper, "loaded");
 
-		giantSeaweedLabel.setText(FORMAT.format(bankScanner.getGiantSeaweedCount()));
-		bucketOfSandLabel.setText(FORMAT.format(bankScanner.getBucketOfSandCount()));
+		giantSeaweedLabel.setText(FORMAT.format(bankScanner.totalGiantSeaweed()));
+		bucketOfSandLabel.setText(FORMAT.format(bankScanner.totalBucketOfSand()));
 
 		moltenGlassLabel.setText(FORMAT.format(bankScanner.totalMoltenGlass()));
 

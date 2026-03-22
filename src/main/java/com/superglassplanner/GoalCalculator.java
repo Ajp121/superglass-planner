@@ -165,7 +165,7 @@ public class GoalCalculator
 	 */
 	public int seaweedDeficit()
 	{
-		return Math.max(0, seaweedNeeded() - bankScanner.getGiantSeaweedCount());
+		return Math.max(0, seaweedNeeded() - bankScanner.totalGiantSeaweed());
 	}
 
 	/**
@@ -173,7 +173,7 @@ public class GoalCalculator
 	 */
 	public int sandDeficit()
 	{
-		return Math.max(0, sandNeeded() - bankScanner.getBucketOfSandCount());
+		return Math.max(0, sandNeeded() - bankScanner.totalBucketOfSand());
 	}
 
 	/**

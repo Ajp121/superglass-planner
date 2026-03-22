@@ -205,11 +205,27 @@ public class BankScanner
 	}
 
 	/**
-	 * Total astral runes across bank + rune pouch.
+	 * Total giant seaweed across bank + inventory.
+	 */
+	public int totalGiantSeaweed()
+	{
+		return giantSeaweedCount + inventorySeaweedCount;
+	}
+
+	/**
+	 * Total buckets of sand across bank + inventory.
+	 */
+	public int totalBucketOfSand()
+	{
+		return bucketOfSandCount + inventorySandCount;
+	}
+
+	/**
+	 * Total astral runes across bank + rune pouch + inventory.
 	 */
 	public int totalAstralRunes()
 	{
-		return astralRuneCount + runePouchAstralCount;
+		return astralRuneCount + runePouchAstralCount + inventoryAstralCount;
 	}
 
 	/**
@@ -218,12 +234,9 @@ public class BankScanner
 	 */
 	public int possibleCasts()
 	{
-		int totalSeaweed = giantSeaweedCount + inventorySeaweedCount;
-		int totalSand = bucketOfSandCount + inventorySandCount;
-		int totalAstrals = totalAstralRunes() + inventoryAstralCount;
-		int castsBySeaweed = totalSeaweed / GIANT_SEAWEED_PER_CAST;
-		int castsBySand = totalSand / SAND_PER_CAST;
-		int castsByAstrals = totalAstrals / ASTRAL_RUNES_PER_CAST;
+		int castsBySeaweed = totalGiantSeaweed() / GIANT_SEAWEED_PER_CAST;
+		int castsBySand = totalBucketOfSand() / SAND_PER_CAST;
+		int castsByAstrals = totalAstralRunes() / ASTRAL_RUNES_PER_CAST;
 		return Math.min(castsBySeaweed, Math.min(castsBySand, castsByAstrals));
 	}
 
@@ -241,22 +254,22 @@ public class BankScanner
 	 */
 	public int maxCastsIgnoringSeaweed()
 	{
-		int castsBySand = bucketOfSandCount / SAND_PER_CAST;
+		int castsBySand = totalBucketOfSand() / SAND_PER_CAST;
 		int castsByAstrals = totalAstralRunes() / ASTRAL_RUNES_PER_CAST;
 		return Math.min(castsBySand, castsByAstrals);
 	}
 
 	public int maxCastsIgnoringSand()
 	{
-		int castsBySeaweed = giantSeaweedCount / GIANT_SEAWEED_PER_CAST;
+		int castsBySeaweed = totalGiantSeaweed() / GIANT_SEAWEED_PER_CAST;
 		int castsByAstrals = totalAstralRunes() / ASTRAL_RUNES_PER_CAST;
 		return Math.min(castsBySeaweed, castsByAstrals);
 	}
 
 	public int maxCastsIgnoringAstrals()
 	{
-		int castsBySeaweed = giantSeaweedCount / GIANT_SEAWEED_PER_CAST;
-		int castsBySand = bucketOfSandCount / SAND_PER_CAST;
+		int castsBySeaweed = totalGiantSeaweed() / GIANT_SEAWEED_PER_CAST;
+		int castsBySand = totalBucketOfSand() / SAND_PER_CAST;
 		return Math.min(castsBySeaweed, castsBySand);
 	}
 
@@ -266,7 +279,7 @@ public class BankScanner
 	public int seaweedDeficit()
 	{
 		int needed = maxCastsIgnoringSeaweed() * GIANT_SEAWEED_PER_CAST;
-		return Math.max(0, needed - giantSeaweedCount);
+		return Math.max(0, needed - totalGiantSeaweed());
 	}
 
 	/**
@@ -275,7 +288,7 @@ public class BankScanner
 	public int sandDeficit()
 	{
 		int needed = maxCastsIgnoringSand() * SAND_PER_CAST;
-		return Math.max(0, needed - bucketOfSandCount);
+		return Math.max(0, needed - totalBucketOfSand());
 	}
 
 	/**
@@ -291,12 +304,12 @@ public class BankScanner
 
 	public int castsFromSeaweed()
 	{
-		return giantSeaweedCount / GIANT_SEAWEED_PER_CAST;
+		return totalGiantSeaweed() / GIANT_SEAWEED_PER_CAST;
 	}
 
 	public int castsFromSand()
 	{
-		return bucketOfSandCount / SAND_PER_CAST;
+		return totalBucketOfSand() / SAND_PER_CAST;
 	}
 
 	public int castsFromAstrals()
@@ -306,12 +319,12 @@ public class BankScanner
 
 	public int sandNeededForCasts(int casts)
 	{
-		return Math.max(0, casts * SAND_PER_CAST - bucketOfSandCount);
+		return Math.max(0, casts * SAND_PER_CAST - totalBucketOfSand());
 	}
 
 	public int seaweedNeededForCasts(int casts)
 	{
-		return Math.max(0, casts * GIANT_SEAWEED_PER_CAST - giantSeaweedCount);
+		return Math.max(0, casts * GIANT_SEAWEED_PER_CAST - totalGiantSeaweed());
 	}
 
 	public int astralsNeededForCasts(int casts)

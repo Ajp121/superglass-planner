@@ -102,7 +102,7 @@ public interface SuperglassPlannerConfig extends Config
 	)
 	default boolean factorExistingGlass()
 	{
-		return false;
+		return true;
 	}
 
 	// Overlay — visible on config page

@@ -26,8 +26,8 @@ import java.awt.image.BufferedImage;
 @Slf4j
 @PluginDescriptor(
 	name = "Superglass Planner",
-	description = "Tracks and optimizes the Superglass Make crafting grind for ironmen",
-	tags = {"ironman", "crafting", "superglass", "molten glass", "seaweed", "lunar"}
+	description = "Plan and track the Superglass Make grind — material tracking, goal calculator, session stats, and glassblowing overlays",
+	tags = {"ironman", "crafting", "superglass", "molten glass", "seaweed", "lunar", "glassblowing"}
 )
 public class SuperglassPlannerPlugin extends Plugin
 {
