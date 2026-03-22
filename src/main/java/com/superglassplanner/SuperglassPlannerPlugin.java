@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
+import net.runelite.api.Skill;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.StatChanged;
@@ -19,6 +20,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ImageUtil;
 
 import javax.inject.Inject;
+import javax.swing.SwingUtilities;
 import java.awt.image.BufferedImage;
 
 @Slf4j
@@ -122,7 +124,7 @@ public class SuperglassPlannerPlugin extends Plugin
 				sessionTracker.softReset();
 				glassblowingTracker.softReset();
 			}
-			panel.update();
+			SwingUtilities.invokeLater(() -> panel.update());
 		}
 	}
 
@@ -137,16 +139,21 @@ public class SuperglassPlannerPlugin extends Plugin
 
 		if (panel.isActive())
 		{
-			panel.update();
+			SwingUtilities.invokeLater(() -> panel.update());
 		}
 	}
 
 	@Subscribe
 	public void onStatChanged(StatChanged event)
 	{
+		if (event.getSkill() != Skill.CRAFTING && event.getSkill() != Skill.MAGIC)
+		{
+			return;
+		}
+
 		if (panel.isActive())
 		{
-			panel.update();
+			SwingUtilities.invokeLater(() -> panel.update());
 		}
 	}
 

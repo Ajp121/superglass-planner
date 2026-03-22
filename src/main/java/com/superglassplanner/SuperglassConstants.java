@@ -10,12 +10,8 @@ public final class SuperglassConstants
 	// Item IDs
 	public static final int GIANT_SEAWEED = 21504;
 	public static final int BUCKET_OF_SAND = 1783;
-	public static final int SODA_ASH = 1781;
 	public static final int MOLTEN_GLASS = 1775;
-	public static final int SEAWEED = 401;
 	public static final int ASTRAL_RUNE = 9075;
-	public static final int FIRE_RUNE = 554;
-	public static final int AIR_RUNE = 556;
 
 	// Superglass Make produces ~1.3x molten glass (30% bonus yield)
 	// With 3 giant seaweed (18 regular equivalent) + 18 sand = 18 base glass
@@ -28,16 +24,12 @@ public final class SuperglassConstants
 	public static final double AVG_TOTAL_GLASS_PER_CAST = BASE_GLASS_PER_CAST + AVG_BONUS_GLASS_PER_CAST;
 	public static final double AVG_GLASS_NO_PICKUP = BASE_GLASS_PER_CAST;
 
+	// Crafting XP for blowing unpowered orbs — kept for reference
+	// public static final double CRAFTING_XP_PER_GLASS_BLOW = 52.5;
+
 	// XP values
-	public static final double CRAFTING_XP_PER_GLASS_BLOW = 52.5; // Unpowered orb (most common ironman method)
 	public static final double MAGIC_XP_PER_CAST = 78.0;
 	public static final double CRAFTING_XP_PER_CAST = 180.0; // From the spell itself
-
-	// Bert daily sand
-	public static final int BERT_DAILY_SAND = 84;
-
-	// Seaweed farm cycle (40 minutes in milliseconds)
-	public static final long SEAWEED_GROWTH_TIME_MS = 40 * 60 * 1000L;
 
 	// Animation IDs
 	public static final int SUPERGLASS_MAKE_ANIMATION = 4413;

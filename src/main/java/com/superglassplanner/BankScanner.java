@@ -39,9 +39,6 @@ public class BankScanner
 	private int bucketOfSandCount;
 
 	@Getter
-	private int sodaAshCount;
-
-	@Getter
 	private int moltenGlassCount;
 
 	@Getter
@@ -90,7 +87,6 @@ public class BankScanner
 
 		giantSeaweedCount = 0;
 		bucketOfSandCount = 0;
-		sodaAshCount = 0;
 		moltenGlassCount = 0;
 		astralRuneCount = 0;
 
@@ -109,9 +105,6 @@ public class BankScanner
 				case BUCKET_OF_SAND:
 					bucketOfSandCount += item.getQuantity();
 					break;
-				case SODA_ASH:
-					sodaAshCount += item.getQuantity();
-					break;
 				case MOLTEN_GLASS:
 					moltenGlassCount += item.getQuantity();
 					break;
@@ -122,8 +115,8 @@ public class BankScanner
 		}
 
 		bankLoaded = true;
-		log.debug("Bank scanned - Seaweed: {}, Sand: {}, Soda Ash: {}, Glass: {}, Astrals: {}",
-			giantSeaweedCount, bucketOfSandCount, sodaAshCount, moltenGlassCount, astralRuneCount);
+		log.debug("Bank scanned - Seaweed: {}, Sand: {}, Glass: {}, Astrals: {}",
+			giantSeaweedCount, bucketOfSandCount, moltenGlassCount, astralRuneCount);
 	}
 
 	private void updateLootingBagCounts(ItemContainer bag)
@@ -331,7 +324,6 @@ public class BankScanner
 	{
 		giantSeaweedCount = 0;
 		bucketOfSandCount = 0;
-		sodaAshCount = 0;
 		moltenGlassCount = 0;
 		astralRuneCount = 0;
 		runePouchAstralCount = 0;

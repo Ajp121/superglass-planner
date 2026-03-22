@@ -83,7 +83,7 @@ public class SuperglassPlannerPanel extends PluginPanel
 	private JPanel bankWrapper;
 	private JPanel goalWrapper;
 	private boolean updatingControls = false;
-	private boolean active = false;
+	private volatile boolean active = false;
 
 	@Inject
 	public SuperglassPlannerPanel(
@@ -522,7 +522,7 @@ public void update()
 		setDeficit(seaweedDeficitLabel, goalCalculator.seaweedDeficit(), "Enough!");
 		setDeficit(sandDeficitLabel, goalCalculator.sandDeficit(), "Enough!");
 
-		double prog = goalCalculator.progress();
+		double prog = Math.min(1.0, Math.max(0.0, goalCalculator.progress()));
 		goalProgressBar.setValue((int) (prog * 100));
 		goalProgressBar.setCenterLabel(String.format("%.1f%%", prog * 100));
 		goalProgressBar.setForeground(prog >= 1.0
