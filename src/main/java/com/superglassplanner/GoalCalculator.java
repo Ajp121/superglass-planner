@@ -24,13 +24,22 @@ public class GoalCalculator
 	private BankScanner bankScanner;
 
 	/**
+	 * Glass per cast based on config: when picking up extra glass, uses the
+	 * statistical average (28.8); otherwise, uses the user-configured value
+	 * which depends on free inventory slots.
+	 */
+	public double glassPerCast()
+	{
+		return config.pickupExtraGlass() ? AVG_TOTAL_GLASS_PER_CAST : config.glassPerCast();
+	}
+
+	/**
 	 * Effective crafting XP per glass, including both Superglass Make cast XP
 	 * and the XP from blowing the glass item.
 	 */
 	public double effectiveXpPerGlass()
 	{
-		double glassPerCast = config.pickupExtraGlass() ? AVG_TOTAL_GLASS_PER_CAST : AVG_GLASS_NO_PICKUP;
-		double makeXpPerGlass = CRAFTING_XP_PER_CAST / glassPerCast;
+		double makeXpPerGlass = CRAFTING_XP_PER_CAST / glassPerCast();
 		return config.glassItem().getXpPerGlass() + makeXpPerGlass;
 	}
 
@@ -93,8 +102,7 @@ public class GoalCalculator
 	 */
 	public int castsNeeded()
 	{
-		double glassPerCast = config.pickupExtraGlass() ? AVG_TOTAL_GLASS_PER_CAST : AVG_GLASS_NO_PICKUP;
-		return (int) Math.ceil(glassNeeded() / glassPerCast);
+		return (int) Math.ceil(glassNeeded() / glassPerCast());
 	}
 
 	/**

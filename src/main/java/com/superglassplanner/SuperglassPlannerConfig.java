@@ -84,6 +84,17 @@ public interface SuperglassPlannerConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "glassPerCast",
+		name = "Inventory Space",
+		description = "Free inventory slots for glass after casting Superglass Make",
+		hidden = true
+	)
+	default int glassPerCast()
+	{
+		return 26;
+	}
+
+	@ConfigItem(
 		keyName = "factorExistingGlass",
 		name = "Factor Existing Glass",
 		description = "Subtract molten glass already in bank/looting bag from glass needed calculations",

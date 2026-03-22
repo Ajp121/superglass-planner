@@ -230,9 +230,8 @@ public class BankScanner
 	/**
 	 * Returns estimated molten glass from current materials.
 	 */
-	public int estimatedGlass(boolean pickupExtra)
+	public int estimatedGlass(double glassPerCast)
 	{
-		double glassPerCast = pickupExtra ? AVG_TOTAL_GLASS_PER_CAST : AVG_GLASS_NO_PICKUP;
 		return (int) (possibleCasts() * glassPerCast);
 	}
 

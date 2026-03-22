@@ -67,6 +67,11 @@ public class SuperglassPlannerPanel extends PluginPanel
 	private final JSpinner targetSpinner = new JSpinner(new SpinnerNumberModel(99, 1, 200_000_000, 1));
 	private final JLabel targetLabel = new JLabel("Target Level");
 	private final JCheckBox pickupCheckbox = new JCheckBox();
+	private final JSpinner glassPerCastSpinner = new JSpinner(new SpinnerNumberModel(26, 1, 50, 1))
+	{{
+		setToolTipText("Free inventory slots after casting (glass produced per cast)");
+	}};
+	private JPanel glassPerCastWrapper;
 	private final JCheckBox existingGlassCheckbox = new JCheckBox();
 	private final JLabel bankWarningLabel = new JLabel("Open bank to update glass count");
 	private JPanel bankWarningWrapper;
@@ -82,6 +87,8 @@ public class SuperglassPlannerPanel extends PluginPanel
 	private JPanel bankNotLoadedPanel;
 	private JPanel bankWrapper;
 	private JPanel goalWrapper;
+	private JPanel xpRemainingRow;
+	private JPanel itemsToBlowRow;
 	private boolean updatingControls = false;
 	private volatile boolean active = false;
 
@@ -164,6 +171,8 @@ public class SuperglassPlannerPanel extends PluginPanel
 		goalTypeCombo.setSelectedItem(config.goalType());
 		glassItemCombo.setSelectedItem(config.glassItem());
 		pickupCheckbox.setSelected(config.pickupExtraGlass());
+		glassPerCastSpinner.setValue(config.glassPerCast());
+		syncGlassPerCastRow(!config.pickupExtraGlass());
 		existingGlassCheckbox.setSelected(config.factorExistingGlass());
 		syncTargetSpinner();
 		updatingControls = false;
@@ -209,6 +218,14 @@ public class SuperglassPlannerPanel extends PluginPanel
 		{
 			if (updatingControls) return;
 			configManager.setConfiguration(CONFIG_GROUP, "pickupExtraGlass", pickupCheckbox.isSelected());
+			syncGlassPerCastRow(!pickupCheckbox.isSelected());
+			update();
+		});
+
+		glassPerCastSpinner.addChangeListener(e ->
+		{
+			if (updatingControls) return;
+			configManager.setConfiguration(CONFIG_GROUP, "glassPerCast", (Integer) glassPerCastSpinner.getValue());
 			update();
 		});
 
@@ -240,6 +257,20 @@ public class SuperglassPlannerPanel extends PluginPanel
 		}
 		JSpinner.NumberEditor editor = new JSpinner.NumberEditor(targetSpinner, "#");
 		targetSpinner.setEditor(editor);
+	}
+
+	private void syncGlassPerCastRow(boolean show)
+	{
+		if (show && glassPerCastWrapper.getComponentCount() == 0)
+		{
+			glassPerCastWrapper.add(labeledControl("Inventory space", glassPerCastSpinner), BorderLayout.CENTER);
+			glassPerCastWrapper.revalidate();
+		}
+		else if (!show && glassPerCastWrapper.getComponentCount() > 0)
+		{
+			glassPerCastWrapper.removeAll();
+			glassPerCastWrapper.revalidate();
+		}
 	}
 
 	// ---- Section builders ----
@@ -340,7 +371,18 @@ private void buildGoalSection(JPanel parent)
 	parent.add(labeledControl("Goal Type", goalTypeCombo));
 	parent.add(labeledControl(targetLabel, targetSpinner));
 	parent.add(stackedControl("Glass Item", glassItemCombo));
+	pickupCheckbox.setToolTipText("Pick up bonus glass that drops on the floor after casting");
 	parent.add(row("Pickup extra glass", pickupCheckbox));
+	glassPerCastWrapper = new JPanel(new BorderLayout()) {
+		@Override
+		public Dimension getPreferredSize()
+		{
+			if (getComponentCount() == 0) return new Dimension(0, 0);
+			return super.getPreferredSize();
+		}
+	};
+	parent.add(glassPerCastWrapper);
+	existingGlassCheckbox.setToolTipText("Subtract glass already in your bank from goal calculations");
 	parent.add(row("Factor existing glass", existingGlassCheckbox));
 	bankWarningLabel.setFont(FontManager.getRunescapeFont());
 	bankWarningLabel.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
@@ -368,9 +410,11 @@ private void buildGoalSection(JPanel parent)
 	// Logged in
 	JPanel goalDataPanel = new JPanel();
 	goalDataPanel.setLayout(new DynamicGridLayout(0, 1, 0, 3));
-	goalDataPanel.add(row("XP Remaining", xpRemainingLabel));
+	xpRemainingRow = row("XP Remaining", xpRemainingLabel);
+	goalDataPanel.add(xpRemainingRow);
 	goalDataPanel.add(row("Glass to Make", glassNeededLabel));
-	goalDataPanel.add(row("Items to Blow", itemsToBlowLabel));
+	itemsToBlowRow = row("Items to Blow", itemsToBlowLabel);
+	goalDataPanel.add(itemsToBlowRow);
 	goalDataPanel.add(row("Casts Needed", castsNeededLabel));
 	goalDataPanel.add(row("Seaweed Deficit", seaweedDeficitLabel));
 	goalDataPanel.add(row("Sand Deficit", sandDeficitLabel));
@@ -482,7 +526,7 @@ public void update()
 
 		possibleCastsLabel.setText(FORMAT.format(bankScanner.possibleCasts()));
 		possibleCastsLabel.setForeground(VALUE_HIGHLIGHT);
-		estimatedGlassLabel.setText(FORMAT.format(bankScanner.estimatedGlass(config.pickupExtraGlass())));
+		estimatedGlassLabel.setText(FORMAT.format(bankScanner.estimatedGlass(goalCalculator.glassPerCast())));
 		estimatedGlassLabel.setForeground(VALUE_HIGHLIGHT);
 
 		updateBalanceSection();
@@ -515,14 +559,32 @@ public void update()
 	{
 		((CardLayout) goalWrapper.getLayout()).show(goalWrapper, "loggedIn");
 
-		xpRemainingLabel.setText(FORMAT.format(goalCalculator.xpRemaining()));
+		boolean isTargetGlass = config.goalType() == GoalType.TARGET_GLASS;
+		xpRemainingRow.setVisible(!isTargetGlass);
+		itemsToBlowRow.setVisible(!isTargetGlass);
+		goalProgressBar.setVisible(!isTargetGlass || config.factorExistingGlass());
+
+		if (!isTargetGlass)
+		{
+			xpRemainingLabel.setText(FORMAT.format(goalCalculator.xpRemaining()));
+			itemsToBlowLabel.setText(FORMAT.format(goalCalculator.totalItemsToBlow()));
+		}
+
 		glassNeededLabel.setText(FORMAT.format(goalCalculator.glassNeeded()));
-		itemsToBlowLabel.setText(FORMAT.format(goalCalculator.totalItemsToBlow()));
 		castsNeededLabel.setText(FORMAT.format(goalCalculator.castsNeeded()));
 		setDeficit(seaweedDeficitLabel, goalCalculator.seaweedDeficit(), "Enough!");
 		setDeficit(sandDeficitLabel, goalCalculator.sandDeficit(), "Enough!");
 
-		double prog = Math.min(1.0, Math.max(0.0, goalCalculator.progress()));
+		double prog;
+		if (isTargetGlass && config.factorExistingGlass())
+		{
+			int target = config.targetGlass();
+			prog = target > 0 ? Math.min(1.0, (double) bankScanner.totalMoltenGlass() / target) : 1.0;
+		}
+		else
+		{
+			prog = Math.min(1.0, Math.max(0.0, goalCalculator.progress()));
+		}
 		goalProgressBar.setValue((int) (prog * 100));
 		goalProgressBar.setCenterLabel(String.format("%.1f%%", prog * 100));
 		goalProgressBar.setForeground(prog >= 1.0

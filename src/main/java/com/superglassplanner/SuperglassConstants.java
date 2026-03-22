@@ -22,7 +22,6 @@ public final class SuperglassConstants
 	public static final double BASE_GLASS_PER_CAST = 18.0;
 	public static final double AVG_BONUS_GLASS_PER_CAST = 10.8;
 	public static final double AVG_TOTAL_GLASS_PER_CAST = BASE_GLASS_PER_CAST + AVG_BONUS_GLASS_PER_CAST;
-	public static final double AVG_GLASS_NO_PICKUP = BASE_GLASS_PER_CAST;
 
 	// Crafting XP for blowing unpowered orbs — kept for reference
 	// public static final double CRAFTING_XP_PER_GLASS_BLOW = 52.5;
