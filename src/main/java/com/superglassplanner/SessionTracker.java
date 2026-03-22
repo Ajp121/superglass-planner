@@ -3,8 +3,10 @@ package com.superglassplanner;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.InventoryID;
 import net.runelite.api.Skill;
 import net.runelite.api.events.AnimationChanged;
+import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.StatChanged;
 import net.runelite.client.eventbus.Subscribe;
 
@@ -97,6 +99,16 @@ public class SessionTracker
 				}
 			}
 			lastMagicXp = currentXp;
+		}
+	}
+
+	@Subscribe
+	public void onItemContainerChanged(ItemContainerChanged event)
+	{
+		if (event.getContainerId() == InventoryID.BANK.getId()
+			&& needsGlassSnapshot())
+		{
+			snapshotGlass();
 		}
 	}
 

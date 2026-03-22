@@ -30,7 +30,7 @@ public class GoalCalculator
 	 */
 	public double glassPerCast()
 	{
-		return config.pickupExtraGlass() ? AVG_TOTAL_GLASS_PER_CAST : config.glassPerCast();
+		return config.pickupExtraGlass() ? AVG_TOTAL_GLASS_PER_CAST : Math.max(1, config.glassPerCast());
 	}
 
 	/**

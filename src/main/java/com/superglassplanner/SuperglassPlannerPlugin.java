@@ -4,11 +4,11 @@ import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
-import net.runelite.api.InventoryID;
 import net.runelite.api.Skill;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.StatChanged;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
@@ -33,6 +33,9 @@ public class SuperglassPlannerPlugin extends Plugin
 {
 	@Inject
 	private Client client;
+
+	@Inject
+	private ClientThread clientThread;
 
 	@Inject
 	private SuperglassPlannerConfig config;
@@ -68,6 +71,7 @@ public class SuperglassPlannerPlugin extends Plugin
 	private SuperglassPlannerPanel panel;
 
 	private NavigationButton navButton;
+	private GameState previousGameState;
 
 	@Override
 	protected void startUp() throws Exception
@@ -111,7 +115,9 @@ public class SuperglassPlannerPlugin extends Plugin
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged event)
 	{
-		if (event.getGameState() == GameState.LOGIN_SCREEN)
+		GameState current = event.getGameState();
+
+		if (current == GameState.LOGIN_SCREEN && previousGameState != GameState.HOPPING)
 		{
 			bankScanner.reset();
 			if (config.resetOnLogout())
@@ -126,17 +132,13 @@ public class SuperglassPlannerPlugin extends Plugin
 			}
 			SwingUtilities.invokeLater(() -> panel.update());
 		}
+
+		previousGameState = current;
 	}
 
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event)
 	{
-		if (event.getContainerId() == InventoryID.BANK.getId()
-			&& sessionTracker.needsGlassSnapshot())
-		{
-			sessionTracker.snapshotGlass();
-		}
-
 		if (panel.isActive())
 		{
 			SwingUtilities.invokeLater(() -> panel.update());

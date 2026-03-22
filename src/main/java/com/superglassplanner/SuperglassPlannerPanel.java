@@ -36,6 +36,7 @@ public class SuperglassPlannerPanel extends PluginPanel
 	private final GoalCalculator goalCalculator;
 	private final SessionTracker sessionTracker;
 	private final GlassblowingTracker glassblowingTracker;
+	private final net.runelite.client.callback.ClientThread clientThread;
 
 	// Bank labels
 	private final JLabel giantSeaweedLabel = valueLabel();
@@ -91,6 +92,7 @@ public class SuperglassPlannerPanel extends PluginPanel
 	private JPanel itemsToBlowRow;
 	private boolean updatingControls = false;
 	private volatile boolean active = false;
+	private boolean firstActivation = true;
 
 	@Inject
 	public SuperglassPlannerPanel(
@@ -100,7 +102,8 @@ public class SuperglassPlannerPanel extends PluginPanel
 	BankScanner bankScanner,
 	GoalCalculator goalCalculator,
 	SessionTracker sessionTracker,
-	GlassblowingTracker glassblowingTracker)
+	GlassblowingTracker glassblowingTracker,
+	net.runelite.client.callback.ClientThread clientThread)
 	{
 		super(false);
 
@@ -111,6 +114,7 @@ public class SuperglassPlannerPanel extends PluginPanel
 		this.goalCalculator = goalCalculator;
 		this.sessionTracker = sessionTracker;
 		this.glassblowingTracker = glassblowingTracker;
+		this.clientThread = clientThread;
 
 		setLayout(new BorderLayout());
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
@@ -139,7 +143,11 @@ public class SuperglassPlannerPanel extends PluginPanel
 	public void onActivate()
 	{
 		active = true;
-		SwingUtilities.updateComponentTreeUI(this);
+		if (firstActivation)
+		{
+			SwingUtilities.updateComponentTreeUI(this);
+			firstActivation = false;
+		}
 		update();
 	}
 
@@ -264,13 +272,14 @@ public class SuperglassPlannerPanel extends PluginPanel
 		if (show && glassPerCastWrapper.getComponentCount() == 0)
 		{
 			glassPerCastWrapper.add(labeledControl("Inventory space", glassPerCastSpinner), BorderLayout.CENTER);
-			glassPerCastWrapper.revalidate();
 		}
 		else if (!show && glassPerCastWrapper.getComponentCount() > 0)
 		{
 			glassPerCastWrapper.removeAll();
-			glassPerCastWrapper.revalidate();
 		}
+		glassPerCastWrapper.setVisible(show);
+		glassPerCastWrapper.revalidate();
+		glassPerCastWrapper.repaint();
 	}
 
 	// ---- Section builders ----
@@ -444,9 +453,12 @@ private void buildSessionSection(JPanel parent)
 	resetButton.setFocusPainted(false);
 	resetButton.addActionListener(e ->
 	{
-		sessionTracker.reset();
-		glassblowingTracker.reset();
-		update();
+		clientThread.invokeLater(() ->
+		{
+			sessionTracker.reset();
+			glassblowingTracker.reset();
+			SwingUtilities.invokeLater(() -> update());
+		});
 	});
 	parent.add(resetButton);
 }
@@ -541,16 +553,18 @@ public void update()
 		if (bankWarningWrapper.getComponentCount() == 0)
 		{
 			bankWarningWrapper.add(bankWarningLabel, BorderLayout.CENTER);
-			bankWarningWrapper.revalidate();
 		}
+		bankWarningWrapper.setVisible(true);
+		bankWarningWrapper.revalidate();
 	}
 	else
 	{
 		if (bankWarningWrapper.getComponentCount() > 0)
 		{
 			bankWarningWrapper.removeAll();
-			bankWarningWrapper.revalidate();
 		}
+		bankWarningWrapper.setVisible(false);
+		bankWarningWrapper.revalidate();
 	}
 
 	boolean loggedIn = client.getGameState() == GameState.LOGGED_IN;
