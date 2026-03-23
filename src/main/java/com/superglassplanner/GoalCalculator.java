@@ -34,13 +34,37 @@ public class GoalCalculator
 	}
 
 	/**
+	 * The glass item to use for calculations at the player's current level.
+	 * Resolves BEST_AVAILABLE to the actual best item.
+	 */
+	public GlassItem currentGlassItem()
+	{
+		GlassItem item = config.glassItem();
+		if (item == GlassItem.BEST_AVAILABLE)
+		{
+			return GlassItem.bestItemForLevel(client.getRealSkillLevel(Skill.CRAFTING));
+		}
+		return item;
+	}
+
+	private double makeXpPerGlass()
+	{
+		return CRAFTING_XP_PER_CAST / glassPerCast();
+	}
+
+	/**
 	 * Effective crafting XP per glass, including both Superglass Make cast XP
-	 * and the XP from blowing the glass item.
+	 * and the XP from blowing the glass item. Uses current level's best item
+	 * when BEST_AVAILABLE is selected.
 	 */
 	public double effectiveXpPerGlass()
 	{
-		double makeXpPerGlass = CRAFTING_XP_PER_CAST / glassPerCast();
-		return config.glassItem().getXpPerGlass() + makeXpPerGlass;
+		return currentGlassItem().getXpPerGlass() + makeXpPerGlass();
+	}
+
+	private double effectiveXpPerGlass(GlassItem item)
+	{
+		return item.getXpPerGlass() + makeXpPerGlass();
 	}
 
 	/**
@@ -88,13 +112,76 @@ public class GoalCalculator
 
 		if (config.factorExistingGlass())
 		{
-			// Existing glass only gives blow XP (already made, no Superglass Make XP)
 			int existingGlass = bankScanner.totalMoltenGlass();
-			double xpFromExisting = existingGlass * config.glassItem().getXpPerGlass();
+			double xpFromExisting = existingGlass * currentGlassItem().getXpPerGlass();
 			remaining = Math.max(0, (int) (remaining - xpFromExisting));
 		}
 
+		if (config.glassItem() == GlassItem.BEST_AVAILABLE)
+		{
+			return glassNeededBestAvailable(remaining);
+		}
+
 		return (int) Math.ceil(remaining / effectiveXpPerGlass());
+	}
+
+	/**
+	 * Walks level brackets to calculate glass needed when making the best
+	 * available item at each crafting level.
+	 */
+	private int glassNeededBestAvailable(int xpRemaining)
+	{
+		if (xpRemaining <= 0) return 0;
+
+		double xpLeft = xpRemaining;
+		double currentXp = client.getSkillExperience(Skill.CRAFTING);
+		double mxpg = makeXpPerGlass();
+		int totalGlass = 0;
+
+		while (xpLeft > 0)
+		{
+			int level = levelAtXp((int) currentXp);
+			GlassItem best = GlassItem.bestItemForLevel(level);
+			double effXp = best.getXpPerGlass() + mxpg;
+
+			// Find the XP threshold where the next better item unlocks
+			double bracketCeiling = xpLeft;
+			for (GlassItem candidate : GlassItem.values())
+			{
+				if (candidate == GlassItem.BEST_AVAILABLE) continue;
+				if (candidate.getLevelRequired() > level)
+				{
+					double xpToUnlock = xpForLevel(candidate.getLevelRequired()) - currentXp;
+					if (xpToUnlock > 0 && xpToUnlock < bracketCeiling)
+					{
+						bracketCeiling = xpToUnlock;
+					}
+				}
+			}
+
+			int glassInBracket = (int) Math.ceil(bracketCeiling / effXp);
+			double xpFromBracket = glassInBracket * effXp;
+			totalGlass += glassInBracket;
+			xpLeft -= xpFromBracket;
+			currentXp += xpFromBracket;
+		}
+
+		return totalGlass;
+	}
+
+	/**
+	 * Returns the crafting level at a given XP amount.
+	 */
+	private int levelAtXp(int xp)
+	{
+		for (int level = 99; level >= 1; level--)
+		{
+			if (xp >= xpForLevel(level))
+			{
+				return level;
+			}
+		}
+		return 1;
 	}
 
 	/**
@@ -110,7 +197,7 @@ public class GoalCalculator
 	 */
 	public int itemsToBlowForGoal()
 	{
-		double xpPerItem = config.glassItem().getXpPerGlass();
+		double xpPerItem = currentGlassItem().getXpPerGlass();
 		if (xpPerItem <= 0) return 0;
 		return (int) Math.ceil(xpRemaining() / xpPerItem);
 	}
@@ -120,7 +207,7 @@ public class GoalCalculator
 	 */
 	public int itemsToBlowForLevel()
 	{
-		double xpPerItem = config.glassItem().getXpPerGlass();
+		double xpPerItem = currentGlassItem().getXpPerGlass();
 		if (xpPerItem <= 0) return 0;
 		int currentLevel = client.getRealSkillLevel(Skill.CRAFTING);
 		if (currentLevel >= 99) return 0;
@@ -201,7 +288,7 @@ public class GoalCalculator
 			}
 			case TARGET_GLASS:
 			default:
-				return 0.0; // Can't easily track glass progress without session data
+				return 0.0;
 		}
 	}
 
