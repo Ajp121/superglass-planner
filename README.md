@@ -16,20 +16,7 @@ A [RuneLite](https://runelite.net/) plugin for planning and tracking the Supergl
 - **Glassblowing Overlay** — Shows items blown, items remaining to goal/level, and crafting XP while blowing glass
 
 ### Configuration
-- Choose your glass item (unpowered orb, lantern lens, etc.) for accurate XP calculations
+- Choose your glass item (unpowered orb, lantern lens, etc.) or select best available for accurate XP calculations
 - Toggle pickup extra glass and set your expected glass per cast based on inventory space
 - Factor existing glass into goal calculations
 - Configurable overlay timeouts
-- Optional session reset on logout
-
-## Installation
-
-Search for **Superglass Planner** in the RuneLite Plugin Hub.
-
-## Building
-
-```
-./gradlew build
-```
-
-Requires Java 11+.
